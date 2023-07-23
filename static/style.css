@@ -1,0 +1,263 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f2f2f2;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+tr.channel-row.running {
+    background-color: #d9f5d9;
+}
+
+tr.channel-row.stopped {
+    background-color: #ffe6e6;
+}
+
+.status {
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 20px;
+    text-transform: capitalize;
+}
+
+.status-stopped {
+    color: #dc3545;
+    background-color: #ffe6e6;
+}
+
+.status-running {
+    color: #28a745;
+    background-color: #d9f5d9;
+}
+
+.filter-container {
+    margin-bottom: 10px;
+}
+
+.filter-container label {
+    margin-right: 5px;
+}
+
+.filter-container select {
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.actions {
+    position: relative;
+    text-align: right;
+}
+
+.actions-dropdown {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    z-index: 1;
+}
+
+.show-dropdown {
+    display: block;
+}
+
+.action-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background-color: transparent;
+    text-align: right;
+    cursor: pointer;
+}
+
+.more-icon {
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+}
+
+.new-channel-btn {
+    display: block;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 50px;
+    font-size: 24px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+}
+
+.new-channel-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Your existing CSS styles */
+
+/* Additional styles for buttons */
+.action-btn {
+    margin-right: 5px;
+    padding: 8px;
+    border: none;
+    background-color: transparent;
+    text-align: center;
+    cursor: pointer;
+}
+
+.start-btn {
+    color: #28a745;
+    font-size: 18px;
+}
+
+.stop-btn {
+    color: #dc3545;
+    font-size: 18px;
+}
+
+.edit-btn {
+    color: #007bff;
+    font-size: 18px;
+}
+
+.delete-btn {
+    color: #dc3545;
+    font-size: 18px;
+
+}
+
+.more-icon {
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+}
+
+.status-icon {
+    margin-right: 5px;
+}
+
+/* New Channel Page Styles */
+
+.new-channel-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: url('data:image/svg+xml;utf8,<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"></path></svg>') no-repeat right 8px center/12px 12px;
+}
+
+.new-channel-btn {
+    margin-top: 20px;
+    display: inline-block;
+    padding: 10px 20px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.new-channel-btn:hover {
+    background-color: #0056b3;
+}
+
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"], select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+textarea {
+    width: 100%;
+    height: 150px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.btn-container {
+    text-align: right;
+}
+
+.btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn.cancel {
+    background-color: #ccc;
+    margin-right: 10px;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+

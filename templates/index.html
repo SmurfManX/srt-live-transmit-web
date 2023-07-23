@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SRT Channels</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>SRT Channels</h1>
+        <div class="filter-container">
+            <label>Filter:</label>
+            <select id="channelFilter">
+                <option value="all">All</option>
+                <option value="running">Running</option>
+                <option value="stopped">Stopped</option>
+            </select>
+        </div>
+        <table id="channelTable">
+            <tr>
+                <th>Channel Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            {% for channel in channels %}
+            <tr class="channel-row {{ channel['status'] }}">
+                <td>{{ channel['channel_name'] }}</td>
+                <td class="status">
+                    {% if channel['status'] == 'stopped' %}
+                        <i class="fas fa-circle status-icon status-stopped"></i> Stopped
+                    {% elif channel['status'] == 'running' %}
+                        <i class="fas fa-circle status-icon status-running"></i> Running
+                    {% endif %}
+                </td>
+                <td class="actions">
+                    <div class="actions-dropdown">
+                        <form action="{{ url_for('start_channel', channel_name=channel['channel_name']) }}" method="post">
+                            <button class="action-btn start-btn"><i class="fas fa-play"></i></button>
+                        </form>
+                        <form action="{{ url_for('stop_channel', channel_name=channel['channel_name']) }}" method="post">
+                            <button class="action-btn stop-btn"><i class="fas fa-stop"></i></button>
+                        </form>
+                        <a href="{{ url_for('edit_channel', channel_name=channel['channel_name']) }}" class="action-btn edit-btn"><i class="fas fa-edit"></i></a>
+                        <form action="{{ url_for('delete_channel', channel_name=channel['channel_name']) }}" method="post">
+                            <button class="action-btn delete-btn"><i class="fas fa-trash-alt"></i></button>
+                        </form>
+                    </div>
+                    <i class="fas fa-ellipsis-v more-icon" onclick="toggleDropdown(this)"></i>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <a href="{{ url_for('new_channel') }}" class="new-channel-btn">
+        <i class="fas fa-plus"></i>
+    </a>
+
+    <script>
+        const channelFilter = document.getElementById('channelFilter');
+        const channelRows = document.querySelectorAll('.channel-row');
+
+        channelFilter.addEventListener('change', () => {
+            const selectedFilter = channelFilter.value;
+            channelRows.forEach(row => {
+                if (selectedFilter === 'all' || row.classList.contains(selectedFilter)) {
+                    row.style.display = 'table-row';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        function toggleDropdown(icon) {
+            const actionsDropdown = icon.parentElement.querySelector('.actions-dropdown');
+            actionsDropdown.classList.toggle('show-dropdown');
+        }
+
+        function startChannel(channelName) {
+            document.getElementById('channelName').value = channelName;
+            document.getElementById('startForm').submit();
+        }
+
+        function stopChannel(channelName) {
+            document.getElementById('channelName').value = channelName;
+            document.getElementById('stopForm').submit();
+        }
+
+    </script>
+
+</body>
+</html>

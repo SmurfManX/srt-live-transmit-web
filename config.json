@@ -1,6 +1,6 @@
 [
     {
-        "channel_name": "Setanta1",
+        "channel_name": "channel 1",
         "mode": "server",
         "input_protocol": "udp",
         "output_protocol": "srt",
@@ -17,7 +17,7 @@
         "status": "stopped"
     },
     {
-        "channel_name": "Setanta 2",
+        "channel_name": "channel 2",
         "mode": "client",
         "input_protocol": "udp",
         "output_protocol": "srt",
@@ -35,7 +35,7 @@
         "pid": 27234
     },
     {
-        "channel_name": "Q111",
+        "channel_name": "channel 3",
         "input_protocol": "udp",
         "input_ip": "233.23.23.100",
         "input_port": "23100",
@@ -48,7 +48,6 @@
         "output_rcvbuf": "30000",
         "output_sndbuf": "3000",
         "output_latency": "20000",
-        "channel_logo": "120A5b6T_400x400.jpeg",
         "status": "running",
         "pid": 27238
     }

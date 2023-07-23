@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Channel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <h1>Create a New Channel</h1>
+    <form method="post" enctype="multipart/form-data">
+        <label>Channel Name:</label>
+        <input type="text" name="channel_name" required><br>
+        
+        <!-- Add more parameters here -->
+        <label>Input Protocol:</label>
+        <input type="text" name="input_protocol" required><br>
+        <label>Input IP:</label>
+        <input type="text" name="input_ip" required><br>
+        <label>Input Port:</label>
+        <input type="text" name="input_port" required><br>
+        <label>Input rcvbuf:</label>
+        <input type="text" name="input_rcvbuf" required><br>
+        <label>Input sndbuf:</label>
+        <input type="text" name="input_sndbuf" required><br>
+        <label>Input Latency:</label>
+        <input type="text" name="input_latency" required><br>
+        <label>Output Protocol:</label>
+        <input type="text" name="output_protocol" required><br>
+        <label>Output IP:</label>
+        <input type="text" name="output_ip" required><br>
+        <label>Output Port:</label>
+        <input type="text" name="output_port" required><br>
+        <label>Output rcvbuf:</label>
+        <input type="text" name="output_rcvbuf" required><br>
+        <label>Output sndbuf:</label>
+        <input type="text" name="output_sndbuf" required><br>
+        <label>Output Latency:</label>
+        <input type="text" name="output_latency" required><br>
+        <input type="submit" value="Create Channel">
+    </form>
+</body>
+</html>
