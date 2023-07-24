@@ -19,7 +19,33 @@ def save_channels(channels):
         json.dump(channels, f, indent=4)
 
 def build_command(channel):
-    cmd = f"srt-live-transmit {channel['input_protocol']}://{channel['input_ip']}:{channel['input_port']}?rcvbuf={channel['input_rcvbuf']}&sndbuf={channel['input_sndbuf']}&latency={channel['input_latency']} {channel['output_protocol']}://{channel['output_ip']}:{channel['output_port']}?rcvbuf={channel['output_rcvbuf']}&sndbuf={channel['output_sndbuf']}&latency={channel['output_latency']}"
+    input_protocol = channel['input_protocol']
+    input_ip = channel['input_ip']
+    input_port = channel['input_port']
+    input_rcvbuf = channel['input_rcvbuf']
+    input_sndbuf = channel['input_sndbuf']
+    input_latency = channel['input_latency']
+
+    output_protocol = channel['output_protocol']
+    output_ip = channel['output_ip']
+    output_port = channel['output_port']
+    output_rcvbuf = channel['output_rcvbuf']
+    output_sndbuf = channel['output_sndbuf']
+    output_latency = channel['output_latency']
+
+
+    input_url = f"{input_protocol}://{input_ip}:{input_port}" \
+                f"?rcvbuf={input_rcvbuf}&sndbuf={input_sndbuf}&latency={input_latency}"
+
+    if output_protocol == 'srt':
+        output_url = f"srt://:{output_port}" \
+                     f"?rcvbuf={output_rcvbuf}&sndbuf={output_sndbuf}&latency={output_latency}"
+    else:
+        output_url = f"{output_protocol}://{output_ip}:{output_port}" \
+                     f"?rcvbuf={output_rcvbuf}&sndbuf={output_sndbuf}&latency={output_latency}"
+
+    cmd = f"srt-live-transmit {input_url} {output_url}"
+
     return cmd
 
 @app.route('/', methods=['GET', 'POST'])
@@ -108,4 +134,5 @@ def delete_channel(channel_name):
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=3200, debug=True)
+

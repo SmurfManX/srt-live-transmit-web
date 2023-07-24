@@ -20,6 +20,7 @@
             <tr>
                 <th>Channel Name</th>
                 <th>Status</th>
+                <th>Input Bitrate</th>
                 <th>Actions</th>
             </tr>
             {% for channel in channels %}
@@ -32,6 +33,7 @@
                         <i class="fas fa-circle status-icon status-running"></i> Running
                     {% endif %}
                 </td>
+                <td class="bitrate">{{ channel['input_bitrate'] }}</td>
                 <td class="actions">
                     <div class="actions-dropdown">
                         <form action="{{ url_for('start_channel', channel_name=channel['channel_name']) }}" method="post">
@@ -74,17 +76,6 @@
             const actionsDropdown = icon.parentElement.querySelector('.actions-dropdown');
             actionsDropdown.classList.toggle('show-dropdown');
         }
-
-        function startChannel(channelName) {
-            document.getElementById('channelName').value = channelName;
-            document.getElementById('startForm').submit();
-        }
-
-        function stopChannel(channelName) {
-            document.getElementById('channelName').value = channelName;
-            document.getElementById('stopForm').submit();
-        }
-
     </script>
 
 </body>
