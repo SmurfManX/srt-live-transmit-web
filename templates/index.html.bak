@@ -4,6 +4,7 @@
     <title>SRT Channels</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 </head>
@@ -11,30 +12,20 @@
     <header>
         <nav class="navbar">
             <div class="nav-wrapper container">
-                <a href="#" class="brand-logo">SRT Channels</a>
                 <a href="#" data-target="mobile-menu" class="sidenav-trigger"><i class="material-icons">menu</i></a>
                 <ul id="nav-desktop" class="right hide-on-med-and-down">
                     <li>
                         <div class="search-container">
-                            <input type="text" class="search-input" placeholder="Search channels..." id="search-input">
-                            <button class="search-btn"><i class="material-icons">search</i></button>
+                            <div class="search-box">
+                                <input type="text" class="search-input" placeholder="Search channels..." id="search-input">
+                                <button class="search-btn"><i class="material-icons">search</i></button>
+                            </div>
                         </div>
                     </li>
                     <li>
                         <a href="#" id="dark-mode-toggle">
                             <i class="material-icons">brightness_4</i>
                         </a>
-                    </li>
-                    <li>
-                        <a href="#" class="dropdown-trigger" data-target="user-dropdown">
-                            <i class="material-icons">account_circle</i>
-                        </a>
-                        <ul id="user-dropdown" class="dropdown-content">
-                            <li><a href="#!"><i class="material-icons">person</i>Profile</a></li>
-                            <li><a href="#!"><i class="material-icons">settings</i>Settings</a></li>
-                            <li class="divider"></li>
-                            <li><a href="#!"><i class="material-icons">logout</i>Logout</a></li>
-                        </ul>
                     </li>
                 </ul>
             </div>
@@ -43,8 +34,10 @@
         <ul class="sidenav" id="mobile-menu">
             <li>
                 <div class="search-container">
-                    <input type="text" class="search-input" placeholder="Search channels..." id="search-input-mobile">
-                    <button class="search-btn"><i class="material-icons">search</i></button>
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="Search channels..." id="search-input-mobile">
+                        <button class="search-btn"><i class="material-icons">search</i></button>
+                    </div>
                 </div>
             </li>
             <li>
@@ -60,10 +53,7 @@
             <div class="channel-table-container">
                 <div class="channel-table-header">
                     <h5>Channel List</h5>
-                    <div class="header-actions">
-                        <a href="#" id="toggle-details" class="btn-flat waves-effect">Show Details</a>
-                        <a href="{{ url_for('new_channel') }}" class="btn-floating btn-large waves-effect waves-light red new-channel-btn"><i class="material-icons">add</i></a>
-                    </div>
+                    <a href="{{ url_for('new_channel') }}" class="btn-floating btn-large waves-effect waves-light red new-channel-btn"><i class="material-icons">add</i></a>
                 </div>
                 <table class="channel-table highlight responsive-table">
                     <thead>
@@ -86,7 +76,7 @@
                             </td>
                             <td class="actions">
                                 <a class="btn-floating btn-small waves-effect waves-light dropdown-trigger" href="#" data-target="dropdown-{{ loop.index }}"><i class="material-icons">more_vert</i></a>
-                                <a href="#details-modal-{{ loop.index }}" class="btn-flat waves-effect modal-trigger"><i class="material-icons">info</i></a>
+                                <a href="#details-modal-{{ loop.index }}" class="btn-flat waves-effect modal-trigger" data-target="details-modal-{{ loop.index }}">Show Details</a>
                                 <ul id="dropdown-{{ loop.index }}" class="dropdown-content">
                                     <li>
                                         <form action="{{ url_for('start_channel', channel_name=channel['channel_name']) }}" method="post" style="display:inline;">
@@ -131,7 +121,7 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <a href="#!" class="modal-close waves-effect waves-green btn-flat"><i class="material-icons">close</i></a>
+                                <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
                             </div>
                         </div>
                         {% endfor %}
@@ -152,12 +142,9 @@
         const channelTable = document.querySelector('.channel-table');
         const scrollToTop = document.getElementById('scroll-to-top');
         const modals = document.querySelectorAll('.modal');
-        const detailsRows = document.querySelectorAll('.details-row');
-        const toggleDetails = document.getElementById('toggle-details');
 
         darkModeToggle.addEventListener('click', toggleDarkMode);
         darkModeToggleMobile.addEventListener('click', toggleDarkMode);
-        toggleDetails.addEventListener('click', toggleDetailsRows);
 
         function toggleDarkMode() {
             body.classList.toggle('dark-mode');
@@ -166,18 +153,6 @@
             modals.forEach(modal => {
                 modal.classList.toggle('dark-mode');
             });
-        }
-
-        function toggleDetailsRows() {
-            detailsRows.forEach(row => {
-                row.classList.toggle('show');
-            });
-
-            if (toggleDetails.textContent === 'Show Details') {
-                toggleDetails.textContent = 'Hide Details';
-            } else {
-                toggleDetails.textContent = 'Show Details';
-            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -195,10 +170,6 @@
             M.Sidenav.init(sideNav);
 
             const modalsInstance = M.Modal.init(modals);
-
-            detailsRows.forEach(row => {
-                row.classList.add('hide');
-            });
         });
 
         document.getElementById('search-input').addEventListener('input', searchChannels);
