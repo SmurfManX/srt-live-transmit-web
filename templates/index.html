@@ -1,82 +1,385 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>SRT Channels</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>SRT Channels</h1>
-        <div class="filter-container">
-            <label>Filter:</label>
-            <select id="channelFilter">
-                <option value="all">All</option>
-                <option value="running">Running</option>
-                <option value="stopped">Stopped</option>
-            </select>
+    <header>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">SRT Channels</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#newChannelModal"><i class="fa-solid fa-plus"></i> New Channel</a>
+                        </li>
+                    </ul>
+                    <form class="d-flex">
+                        <input class="form-control me-2" type="search" placeholder="Search channels..." aria-label="Search" id="channelSearchInput">
+                        <button class="btn btn-outline-primary" type="button"><i class="fa-solid fa-search"></i></button>
+                    </form>
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <button class="btn btn-outline-primary" id="toggleDarkMode"><i class="fa-solid fa-moon"></i> Dark Mode</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="channel-table-container">
+                <div class="channel-table-header">
+                    <h5>Channel List</h5>
+                </div>
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Logo</th>
+                            <th>Channel Name</th>
+                            <th>Status</th>
+                            <th>Start Date</th>
+                            <th>Stats</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="channel-table-body">
+                        {% for channel in channels %}
+                        <tr>
+                            <td>
+                                {% if channel['logo'] %}
+                                    <img src="{{ url_for('static', filename='uploads/' ~ channel['logo']) }}" alt="{{ channel['channel_name'] }} logo" class="channel-logo">
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>{{ channel['channel_name'] }}</td>
+                            <td>
+                                {% if channel['status'] == 'stopped' %}
+                                    <span class="status status-stopped">Stopped</span>
+                                {% elif channel['status'] == 'running' %}
+                                    <span class="status status-running">Running</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ channel.get('start_date', 'N/A') }}</td>
+                            <td>
+                                <a href="{{ url_for('view_stats', channel_name=channel['channel_name']) }}" class="btn btn-sm btn-outline-info" title="View Stats"><i class="fa-solid fa-chart-line"></i> View Stats</a>
+                            </td>
+                            <td class="actions">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <form action="{{ url_for('start_channel', channel_name=channel['channel_name']) }}" method="post" style="display:inline;">
+                                                <button class="dropdown-item" title="Start"><i class="fa-solid fa-play"></i> Start</button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form action="{{ url_for('stop_channel', channel_name=channel['channel_name']) }}" method="post" style="display:inline;">
+                                                <button class="dropdown-item" title="Stop"><i class="fa-solid fa-stop"></i> Stop</button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="dropdown-item edit-channel" title="Edit" data-bs-toggle="modal" data-bs-target="#editChannelModal" data-channel='{{ channel|tojson }}'><i class="fa-solid fa-pen-to-square"></i> Edit</a>
+                                        </li>
+                                        <li>
+                                            <form action="{{ url_for('delete_channel', channel_name=channel['channel_name']) }}" method="post" style="display:inline;">
+                                                <button class="dropdown-item" title="Delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <table id="channelTable">
-            <tr>
-                <th>Channel Name</th>
-                <th>Status</th>
-                <th>Input Bitrate</th>
-                <th>Actions</th>
-            </tr>
-            {% for channel in channels %}
-            <tr class="channel-row {{ channel['status'] }}">
-                <td>{{ channel['channel_name'] }}</td>
-                <td class="status">
-                    {% if channel['status'] == 'stopped' %}
-                        <i class="fas fa-circle status-icon status-stopped"></i> Stopped
-                    {% elif channel['status'] == 'running' %}
-                        <i class="fas fa-circle status-icon status-running"></i> Running
-                    {% endif %}
-                </td>
-                <td class="bitrate">{{ channel['input_bitrate'] }}</td>
-                <td class="actions">
-                    <div class="actions-dropdown">
-                        <form action="{{ url_for('start_channel', channel_name=channel['channel_name']) }}" method="post">
-                            <button class="action-btn start-btn"><i class="fas fa-play"></i></button>
-                        </form>
-                        <form action="{{ url_for('stop_channel', channel_name=channel['channel_name']) }}" method="post">
-                            <button class="action-btn stop-btn"><i class="fas fa-stop"></i></button>
-                        </form>
-                        <a href="{{ url_for('edit_channel', channel_name=channel['channel_name']) }}" class="action-btn edit-btn"><i class="fas fa-edit"></i></a>
-                        <form action="{{ url_for('delete_channel', channel_name=channel['channel_name']) }}" method="post">
-                            <button class="action-btn delete-btn"><i class="fas fa-trash-alt"></i></button>
-                        </form>
-                    </div>
-                    <i class="fas fa-ellipsis-v more-icon" onclick="toggleDropdown(this)"></i>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
+    </main>
+
+    <!-- New Channel Modal -->
+    <div class="modal fade" id="newChannelModal" tabindex="-1" aria-labelledby="newChannelModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newChannelModalLabel">Create a New Channel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{{ url_for('new_channel') }}" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="channel_name" class="form-label">Channel Name</label>
+                            <input type="text" class="form-control" name="channel_name" id="channel_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="input_protocol" class="form-label">Input Protocol</label>
+                            <input type="text" class="form-control" name="input_protocol" id="input_protocol" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="input_ip" class="form-label">Input IP</label>
+                            <input type="text" class="form-control" name="input_ip" id="input_ip" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="input_port" class="form-label">Input Port</label>
+                            <input type="text" class="form-control" name="input_port" id="input_port" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="input_rcvbuf" class="form-label">Input rcvbuf</label>
+                            <input type="text" class="form-control" name="input_rcvbuf" id="input_rcvbuf" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="input_sndbuf" class="form-label">Input sndbuf</label>
+                            <input type="text" class="form-control" name="input_sndbuf" id="input_sndbuf" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="input_latency" class="form-label">Input Latency</label>
+                            <input type="text" class="form-control" name="input_latency" id="input_latency" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="output_protocol" class="form-label">Output Protocol</label>
+                            <input type="text" class="form-control" name="output_protocol" id="output_protocol" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="mode" class="form-label">Mode</label>
+                            <select class="form-select" name="mode" id="mode" required>
+                                <option value="" disabled selected>Select Mode</option>
+                                <option value="listener">Listener</option>
+                                <option value="caller">Caller</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="destination_host_field" style="display:none;">
+                            <label for="destination_host" class="form-label">Destination Host</label>
+                            <input type="text" class="form-control" name="destination_host" id="destination_host">
+                        </div>
+                        <div class="mb-3">
+                            <label for="output_port" class="form-label">Output Port</label>
+                            <input type="text" class="form-control" name="output_port" id="output_port" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="output_rcvbuf" class="form-label">Output rcvbuf</label>
+                            <input type="text" class="form-control" name="output_rcvbuf" id="output_rcvbuf" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="output_sndbuf" class="form-label">Output sndbuf</label>
+                            <input type="text" class="form-control" name="output_sndbuf" id="output_sndbuf" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="output_latency" class="form-label">Output Latency</label>
+                            <input type="text" class="form-control" name="output_latency" id="output_latency" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="oheadbw" class="form-label">Overhead Bandwidth</label>
+                            <input type="text" class="form-control" name="oheadbw" id="oheadbw" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="maxbw" class="form-label">Max Bandwidth</label>
+                            <input type="text" class="form-control" name="maxbw" id="maxbw" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="passphrase" class="form-label">Passphrase</label>
+                            <input type="text" class="form-control" name="passphrase" id="passphrase">
+                        </div>
+                        <div class="mb-3">
+                            <label for="logo" class="form-label">Logo</label>
+                            <input type="file" class="form-control" name="logo" id="logo">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Channel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    <a href="{{ url_for('new_channel') }}" class="new-channel-btn">
-        <i class="fas fa-plus"></i>
-    </a>
+
+    <!-- Edit Channel Modal -->
+    <div class="modal fade" id="editChannelModal" tabindex="-1" aria-labelledby="editChannelModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editChannelModalLabel">Edit Channel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="" enctype="multipart/form-data" id="editChannelForm">
+                        <input type="hidden" name="channel_name" id="edit_channel_name">
+                        <div class="mb-3">
+                            <label for="edit_input_protocol" class="form-label">Input Protocol</label>
+                            <input type="text" class="form-control" name="input_protocol" id="edit_input_protocol" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_input_ip" class="form-label">Input IP</label>
+                            <input type="text" class="form-control" name="input_ip" id="edit_input_ip" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_input_port" class="form-label">Input Port</label>
+                            <input type="text" class="form-control" name="input_port" id="edit_input_port" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_input_rcvbuf" class="form-label">Input rcvbuf</label>
+                            <input type="text" class="form-control" name="input_rcvbuf" id="edit_input_rcvbuf" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_input_sndbuf" class="form-label">Input sndbuf</label>
+                            <input type="text" class="form-control" name="input_sndbuf" id="edit_input_sndbuf" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_input_latency" class="form-label">Input Latency</label>
+                            <input type="text" class="form-control" name="input_latency" id="edit_input_latency" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_output_protocol" class="form-label">Output Protocol</label>
+                            <input type="text" class="form-control" name="output_protocol" id="edit_output_protocol" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_mode" class="form-label">Mode</label>
+                            <select class="form-select" name="mode" id="edit_mode" required>
+                                <option value="listener">Listener</option>
+                                <option value="caller">Caller</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="edit_destination_host_field" style="display:none;">
+                            <label for="edit_destination_host" class="form-label">Destination Host</label>
+                            <input type="text" class="form-control" name="destination_host" id="edit_destination_host">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_output_port" class="form-label">Output Port</label>
+                            <input type="text" class="form-control" name="output_port" id="edit_output_port" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_output_rcvbuf" class="form-label">Output rcvbuf</label>
+                            <input type="text" class="form-control" name="output_rcvbuf" id="edit_output_rcvbuf" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_output_sndbuf" class="form-label">Output sndbuf</label>
+                            <input type="text" class="form-control" name="output_sndbuf" id="edit_output_sndbuf" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_output_latency" class="form-label">Output Latency</label>
+                            <input type="text" class="form-control" name="output_latency" id="edit_output_latency" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_oheadbw" class="form-label">Overhead Bandwidth</label>
+                            <input type="text" class="form-control" name="oheadbw" id="edit_oheadbw" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_maxbw" class="form-label">Max Bandwidth</label>
+                            <input type="text" class="form-control" name="maxbw" id="edit_maxbw" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_passphrase" class="form-label">Passphrase</label>
+                            <input type="text" class="form-control" name="passphrase" id="edit_passphrase">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_logo" class="form-label">Logo</label>
+                            <input type="file" class="form-control" name="logo" id="edit_logo">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const channelFilter = document.getElementById('channelFilter');
-        const channelRows = document.querySelectorAll('.channel-row');
+        document.addEventListener('DOMContentLoaded', function() {
+            const modeField = document.getElementById('mode');
+            const destinationHostField = document.getElementById('destination_host_field');
+            const editModeField = document.getElementById('edit_mode');
+            const editDestinationHostField = document.getElementById('edit_destination_host_field');
 
-        channelFilter.addEventListener('change', () => {
-            const selectedFilter = channelFilter.value;
-            channelRows.forEach(row => {
-                if (selectedFilter === 'all' || row.classList.contains(selectedFilter)) {
-                    row.style.display = 'table-row';
+            modeField.addEventListener('change', function() {
+                if (this.value === 'caller') {
+                    destinationHostField.style.display = 'block';
                 } else {
-                    row.style.display = 'none';
+                    destinationHostField.style.display = 'none';
                 }
             });
+
+            editModeField.addEventListener('change', function() {
+                if (this.value === 'caller') {
+                    editDestinationHostField.style.display = 'block';
+                } else {
+                    editDestinationHostField.style.display = 'none';
+                }
+            });
+
+            const editChannelModal = document.getElementById('editChannelModal');
+            editChannelModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const channel = button.getAttribute('data-channel');
+                const channelData = JSON.parse(channel);
+
+                document.getElementById('editChannelForm').action = "{{ url_for('edit_channel', channel_name='') }}" + channelData.channel_name;
+
+                document.getElementById('edit_channel_name').value = channelData.channel_name;
+                document.getElementById('edit_input_protocol').value = channelData.input_protocol;
+                document.getElementById('edit_input_ip').value = channelData.input_ip;
+                document.getElementById('edit_input_port').value = channelData.input_port;
+                document.getElementById('edit_input_rcvbuf').value = channelData.input_rcvbuf;
+                document.getElementById('edit_input_sndbuf').value = channelData.input_sndbuf;
+                document.getElementById('edit_input_latency').value = channelData.input_latency;
+                document.getElementById('edit_output_protocol').value = channelData.output_protocol;
+                document.getElementById('edit_mode').value = channelData.mode;
+                if (channelData.mode === 'caller') {
+                    editDestinationHostField.style.display = 'block';
+                    document.getElementById('edit_destination_host').value = channelData.destination_host;
+                } else {
+                    editDestinationHostField.style.display = 'none';
+                }
+                document.getElementById('edit_output_port').value = channelData.output_port;
+                document.getElementById('edit_output_rcvbuf').value = channelData.output_rcvbuf;
+                document.getElementById('edit_output_sndbuf').value = channelData.output_sndbuf;
+                document.getElementById('edit_output_latency').value = channelData.output_latency;
+                document.getElementById('edit_oheadbw').value = channelData.oheadbw;
+                document.getElementById('edit_maxbw').value = channelData.maxbw;
+                document.getElementById('edit_passphrase').value = channelData.passphrase || '';
+            });
+
+            const toggleDarkModeButton = document.getElementById('toggleDarkMode');
+            toggleDarkModeButton.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                if (document.body.classList.contains('dark-mode')) {
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+
+            const searchInput = document.getElementById('channelSearchInput');
+            searchInput.addEventListener('input', function() {
+                const searchValue = this.value.toLowerCase();
+                const tableRows = document.querySelectorAll('#channel-table-body tr');
+
+                tableRows.forEach(row => {
+                    const channelName = row.cells[1].innerText.toLowerCase();
+                    if (channelName.includes(searchValue)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
         });
-
-        function toggleDropdown(icon) {
-            const actionsDropdown = icon.parentElement.querySelector('.actions-dropdown');
-            actionsDropdown.classList.toggle('show-dropdown');
-        }
     </script>
-
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
