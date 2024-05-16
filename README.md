@@ -40,13 +40,13 @@ The SRT Channel Manager is a web application built with Flask that allows you to
 1. Clone the repository:
 
    ```
-   git clone https://github.com/your-username/srt-channel-manager.git
+   git clone https://github.com/SmurfManX/srt-live-transmit-web.git
    ```
 
 2. Change into the project directory:
 
    ```
-   cd srt-channel-manager
+   cd srt-live-transmit-web
    ```
 
 3. Create a virtual environment and activate it:
