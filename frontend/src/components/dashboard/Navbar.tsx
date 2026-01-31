@@ -57,7 +57,31 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
               <Menu className="h-5 w-5" />
             </button>
 
-            <div className="hidden md:block">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#111] dark:bg-white flex items-center justify-center shadow-elegant">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="w-5 h-5 text-white dark:text-[#111]"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                  <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                  <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+                </svg>
+              </div>
+              <div className="hidden sm:block">
+                <div className="text-base font-bold text-foreground">SRT Manager</div>
+                <div className="text-xs text-muted-foreground">v3.0</div>
+              </div>
+            </div>
+
+            <div className="hidden md:block pl-4 border-l border-border/40">
               <div className="text-sm text-muted-foreground font-medium">
                 Welcome back, <span className="font-bold text-foreground gradient-text-animated text-base">{currentUser?.username || 'User'}</span>
               </div>

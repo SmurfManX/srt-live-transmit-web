@@ -6,12 +6,14 @@ import signal
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Dict, Any
+from filelock import FileLock
 from ..models.channel import Channel, ChannelBase, ChannelUpdate
 
 
 # Configuration paths
 CONFIG_FILE = Path("config.json")
+CONFIG_LOCK = Path("config.json.lock")
 STATS_FOLDER = Path("static/stats")
 LOGS_FOLDER = Path("static/logs")
 
@@ -22,23 +24,44 @@ def ensure_directories():
     LOGS_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
-def load_channels() -> List[Channel]:
-    """Load channels from config.json"""
+def _load_config() -> Dict[str, Any]:
+    """Load full config from JSON file"""
     if not CONFIG_FILE.exists():
-        return []
+        return {"channels": [], "users": []}
     try:
         with open(CONFIG_FILE, 'r') as f:
             data = json.load(f)
-            return [Channel(**ch) for ch in data]
+            # Migration: if config is a list (old format), convert to new format
+            if isinstance(data, list):
+                return {"channels": data, "users": []}
+            return data
+    except (json.JSONDecodeError, IOError):
+        return {"channels": [], "users": []}
+
+
+def _save_config(config: Dict[str, Any]):
+    """Save full config to JSON file"""
+    with FileLock(CONFIG_LOCK):
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(config, f, indent=2, default=str)
+
+
+def load_channels() -> List[Channel]:
+    """Load channels from config.json"""
+    try:
+        config = _load_config()
+        channels_data = config.get("channels", [])
+        return [Channel(**ch) for ch in channels_data]
     except Exception as e:
         print(f"Error loading channels: {e}")
         return []
 
 
 def save_channels(channels: List[Channel]):
-    """Save channels to config.json"""
-    with open(CONFIG_FILE, 'w') as f:
-        json.dump([ch.model_dump() for ch in channels], f, indent=4)
+    """Save channels to config.json (preserving users)"""
+    config = _load_config()
+    config["channels"] = [ch.model_dump() for ch in channels]
+    _save_config(config)
 
 
 def get_channel_by_name(channel_name: str) -> Optional[Channel]:

@@ -22,7 +22,7 @@ export default function Dashboard() {
   const [channels, setChannels] = useState<Channel[]>([])
   const [interfaces, setInterfaces] = useState<NetworkInterface[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'running' | 'stopped'>('all')
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
   const [editingChannel, setEditingChannel] = useState<Channel | undefined>()
@@ -33,6 +33,10 @@ export default function Dashboard() {
   const [statsChannelName, setStatsChannelName] = useState('')
   const [detailModalOpen, setDetailModalOpen] = useState(false)
   const [detailChannel, setDetailChannel] = useState<Channel | null>(null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteChannelName, setDeleteChannelName] = useState('')
+  const [stopModalOpen, setStopModalOpen] = useState(false)
+  const [stopChannelName, setStopChannelName] = useState('')
   const [expandedChannel, setExpandedChannel] = useState<string | null>(null)
   const [streamInfoCache, setStreamInfoCache] = useState<Record<string, StreamInfo>>({})
   const [srtStatusCache, setSrtStatusCache] = useState<Record<string, SrtStatus>>({})
@@ -139,17 +143,36 @@ export default function Dashboard() {
     await handleToggle(name, false)
   }
 
-  const handleStop = async (name: string) => {
-    await handleToggle(name, true)
+  const handleStop = (name: string) => {
+    setStopChannelName(name)
+    setStopModalOpen(true)
   }
 
-  const handleDelete = async (name: string) => {
-    if (!confirm(`Delete channel "${name}"?`)) return
+  const confirmStop = async () => {
+    if (!stopChannelName) return
     try {
-      await channelsAPI.delete(name)
-      if (!isConnected) loadData()
+      await handleToggle(stopChannelName, true)
+    } finally {
+      setStopModalOpen(false)
+      setStopChannelName('')
+    }
+  }
+
+  const handleDelete = (name: string) => {
+    setDeleteChannelName(name)
+    setDeleteModalOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteChannelName) return
+    try {
+      await channelsAPI.delete(deleteChannelName)
+      loadData()
     } catch (error) {
       console.error('Failed to delete:', error)
+    } finally {
+      setDeleteModalOpen(false)
+      setDeleteChannelName('')
     }
   }
 
@@ -175,7 +198,7 @@ export default function Dashboard() {
         // Use original channel name for API call (in case of rename)
         await channelsAPI.update(originalChannelName, data)
       }
-      if (!isConnected) loadData()
+      loadData()
     } catch (error) {
       console.error('Failed to save:', error)
     }
@@ -197,12 +220,55 @@ export default function Dashboard() {
     return `${(bitrate / 1000).toFixed(0)} Kbps`
   }
 
-  // Filter channels
-  const filteredChannels = channels.filter(ch => {
-    const matchesSearch = ch.channel_name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || ch.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  // Handle sort
+  const handleSort = (key: string) => {
+    setSortConfig(prev => {
+      if (prev?.key === key) {
+        return prev.direction === 'asc' ? { key, direction: 'desc' } : null
+      }
+      return { key, direction: 'asc' }
+    })
+  }
+
+  // Filter and sort channels
+  const filteredChannels = channels
+    .filter(ch => {
+      return ch.channel_name.toLowerCase().includes(searchQuery.toLowerCase())
+    })
+    .sort((a, b) => {
+      if (!sortConfig) return 0
+
+      let aVal: any, bVal: any
+
+      switch (sortConfig.key) {
+        case 'name':
+          aVal = a.channel_name.toLowerCase()
+          bVal = b.channel_name.toLowerCase()
+          break
+        case 'status':
+          aVal = a.status
+          bVal = b.status
+          break
+        case 'input':
+          aVal = `${a.input_protocol}://${a.input_ip}:${a.input_port}`
+          bVal = `${b.input_protocol}://${b.input_ip}:${b.input_port}`
+          break
+        case 'output':
+          aVal = `${a.output_protocol}://${a.output_port}`
+          bVal = `${b.output_protocol}://${b.output_port}`
+          break
+        case 'pid':
+          aVal = a.pid || 0
+          bVal = b.pid || 0
+          break
+        default:
+          return 0
+      }
+
+      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1
+      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1
+      return 0
+    })
 
   const stats = {
     total: channels.length,
@@ -215,7 +281,23 @@ export default function Dashboard() {
       {/* Header */}
       <header className="bg-white dark:bg-[#1a1a1a] border-b border-[#e5e5e5] dark:border-[#333] px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#111] dark:bg-white flex items-center justify-center">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                className="w-5 h-5 text-white dark:text-[#111]"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+              </svg>
+            </div>
             <h1 className="text-xl font-bold text-[#111] dark:text-white">SRT Manager</h1>
           </div>
 
@@ -307,16 +389,6 @@ export default function Dashboard() {
             />
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="px-4 py-2 bg-white dark:bg-[#1a1a1a] border border-[#e5e5e5] dark:border-[#333] rounded-lg text-sm text-[#111] dark:text-white focus:outline-none"
-          >
-            <option value="all">All Status</option>
-            <option value="running">Running</option>
-            <option value="stopped">Stopped</option>
-          </select>
-
           <button
             onClick={loadData}
             disabled={loading}
@@ -339,15 +411,65 @@ export default function Dashboard() {
           <table className="w-full">
             <thead className="bg-[#f9f9f9] dark:bg-[#222] border-b border-[#e5e5e5] dark:border-[#333]">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase">Bitrate In</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase">Bitrate Out</th>
+                <th
+                  onClick={() => handleSort('name')}
+                  className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase cursor-pointer hover:bg-[#eee] dark:hover:bg-[#333] transition-colors select-none"
+                >
+                  <span className="flex items-center gap-1">
+                    Name
+                    {sortConfig?.key === 'name' && (
+                      <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </span>
+                </th>
+                <th
+                  onClick={() => handleSort('status')}
+                  className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase cursor-pointer hover:bg-[#eee] dark:hover:bg-[#333] transition-colors select-none"
+                >
+                  <span className="flex items-center gap-1">
+                    Status
+                    {sortConfig?.key === 'status' && (
+                      <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </span>
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase">RCV</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase">SND</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase">Lost</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase">RTT</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase">Input</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase">Output</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase">PID</th>
+                <th
+                  onClick={() => handleSort('input')}
+                  className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase cursor-pointer hover:bg-[#eee] dark:hover:bg-[#333] transition-colors select-none"
+                >
+                  <span className="flex items-center gap-1">
+                    Input
+                    {sortConfig?.key === 'input' && (
+                      <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </span>
+                </th>
+                <th
+                  onClick={() => handleSort('output')}
+                  className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase cursor-pointer hover:bg-[#eee] dark:hover:bg-[#333] transition-colors select-none"
+                >
+                  <span className="flex items-center gap-1">
+                    Output
+                    {sortConfig?.key === 'output' && (
+                      <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </span>
+                </th>
+                <th
+                  onClick={() => handleSort('pid')}
+                  className="px-4 py-3 text-left text-xs font-medium text-[#333] dark:text-[#999] uppercase cursor-pointer hover:bg-[#eee] dark:hover:bg-[#333] transition-colors select-none"
+                >
+                  <span className="flex items-center gap-1">
+                    PID
+                    {sortConfig?.key === 'pid' && (
+                      <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </span>
+                </th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-[#333] dark:text-[#999] uppercase">Actions</th>
               </tr>
             </thead>
@@ -501,7 +623,7 @@ export default function Dashboard() {
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1">
                             <button
-                              onClick={() => handleToggle(channel.channel_name, channel.status === 'running')}
+                              onClick={() => channel.status === 'running' ? handleStop(channel.channel_name) : handleStart(channel.channel_name)}
                               disabled={actionLoading === channel.channel_name}
                               className={`p-1.5 rounded transition-all min-w-[28px] ${
                                 actionLoading === channel.channel_name
@@ -822,6 +944,120 @@ export default function Dashboard() {
         channelStatus={detailChannel?.status}
         channelData={detailChannel as any}
       />
+
+      {/* Stop Confirmation Modal */}
+      {stopModalOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+            onClick={() => setStopModalOpen(false)}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="w-full max-w-md bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl border border-[#e5e5e5] dark:border-[#333] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <Square className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-lg font-bold text-white">Stop Channel</h2>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <p className="text-[#333] dark:text-[#ccc] mb-2">
+                  Are you sure you want to stop this channel?
+                </p>
+                <div className="p-3 bg-[#f5f5f5] dark:bg-[#222] rounded-lg border border-[#e5e5e5] dark:border-[#333]">
+                  <p className="font-mono font-semibold text-[#111] dark:text-white">
+                    {stopChannelName}
+                  </p>
+                </div>
+                <p className="text-sm text-amber-600 dark:text-amber-400 mt-3">
+                  All active connections will be terminated.
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 px-6 py-4 bg-[#f9f9f9] dark:bg-[#111] border-t border-[#e5e5e5] dark:border-[#333]">
+                <button
+                  onClick={() => setStopModalOpen(false)}
+                  className="flex-1 px-4 py-2.5 bg-white dark:bg-[#222] border border-[#e5e5e5] dark:border-[#444] rounded-lg text-[#333] dark:text-[#ccc] font-medium hover:bg-[#f0f0f0] dark:hover:bg-[#333] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmStop}
+                  className="flex-1 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 rounded-lg text-white font-medium transition-colors"
+                >
+                  Stop
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+            onClick={() => setDeleteModalOpen(false)}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="w-full max-w-md bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl border border-[#e5e5e5] dark:border-[#333] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="px-6 py-4 bg-gradient-to-r from-red-600 to-red-700">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <Trash2 className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-lg font-bold text-white">Delete Channel</h2>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <p className="text-[#333] dark:text-[#ccc] mb-2">
+                  Are you sure you want to delete this channel?
+                </p>
+                <div className="p-3 bg-[#f5f5f5] dark:bg-[#222] rounded-lg border border-[#e5e5e5] dark:border-[#333]">
+                  <p className="font-mono font-semibold text-[#111] dark:text-white">
+                    {deleteChannelName}
+                  </p>
+                </div>
+                <p className="text-sm text-red-600 dark:text-red-400 mt-3">
+                  This action cannot be undone.
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 px-6 py-4 bg-[#f9f9f9] dark:bg-[#111] border-t border-[#e5e5e5] dark:border-[#333]">
+                <button
+                  onClick={() => setDeleteModalOpen(false)}
+                  className="flex-1 px-4 py-2.5 bg-white dark:bg-[#222] border border-[#e5e5e5] dark:border-[#444] rounded-lg text-[#333] dark:text-[#ccc] font-medium hover:bg-[#f0f0f0] dark:hover:bg-[#333] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-white font-medium transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

@@ -10,7 +10,6 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=sqlite:///data/channels.db
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-secret-key-change-in-production}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - CORS_ORIGINS=http://localhost:3000,http://frontend:3000

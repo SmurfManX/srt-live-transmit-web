@@ -103,16 +103,29 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       {/* Logo & Brand */}
       <div className="p-6 flex items-center justify-between border-b-2 border-border/40 relative z-10 backdrop-blur-sm">
         <div className="flex items-center gap-3 animate-slide-in-right">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#4A8B57] to-[#B8935E] shadow-luxury glow-green relative overflow-hidden group">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#111] dark:bg-white shadow-luxury relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-smooth" />
-            <Network className="h-7 w-7 text-white relative z-10 transition-smooth group-hover:scale-110" />
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              className="w-7 h-7 text-white dark:text-[#111] relative z-10 transition-smooth group-hover:scale-110"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+              <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+              <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+              <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+            </svg>
           </div>
           <div>
             <div className="font-black text-xl text-foreground leading-tight gradient-text-animated">
               SRT Manager
             </div>
             <div className="text-xs text-muted-foreground font-bold mt-0.5">
-              v2.0 Professional
+              v3.0
             </div>
           </div>
         </div>

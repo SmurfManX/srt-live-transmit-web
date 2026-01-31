@@ -282,11 +282,11 @@ export default function ChannelDetailModal({
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="relative w-full max-w-6xl max-h-[90vh] overflow-hidden bg-white dark:bg-[#0a0a0a] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800"
+          className="relative w-full max-w-6xl h-[85vh] overflow-hidden bg-white dark:bg-[#0a0a0a] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800">
+          <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800">
             <div className="flex items-center gap-4">
               <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
                 <Radio className="w-6 h-6 text-white" />
@@ -330,12 +330,12 @@ export default function ChannelDetailModal({
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#111]">
+          <div className="flex-shrink-0 flex border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#111]">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
-                className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-all border-b-2 ${
+                className={`flex-1 flex items-center justify-center gap-2 min-w-[120px] px-6 py-3 text-sm font-medium transition-all border-b-2 ${
                   activeTab === tab.id
                     ? 'border-cyan-500 text-cyan-600 dark:text-cyan-400 bg-white dark:bg-[#0a0a0a]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
@@ -348,7 +348,7 @@ export default function ChannelDetailModal({
           </div>
 
           {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)] bg-gray-50 dark:bg-[#0a0a0a]">
+          <div className="flex-1 p-6 overflow-y-auto bg-gray-50 dark:bg-[#0a0a0a]">
 
             {/* Overview Tab */}
             {activeTab === 'overview' && (

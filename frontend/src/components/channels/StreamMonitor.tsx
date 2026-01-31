@@ -55,7 +55,7 @@ export default function StreamMonitor({
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div
-          className="relative w-full max-w-7xl max-h-[90vh] overflow-hidden bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col"
+          className="relative w-full max-w-7xl h-[85vh] overflow-hidden bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -99,7 +99,7 @@ export default function StreamMonitor({
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all
+                  flex-1 flex items-center justify-center gap-2 min-w-[120px] px-4 py-2.5 rounded-lg font-medium text-sm transition-all
                   ${activeTab === tab.id
                     ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50'

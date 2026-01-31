@@ -1,122 +1,183 @@
-"""Database module - SQLite operations for user management"""
+"""Database module - JSON config file operations for user management"""
 
-import sqlite3
+import json
 from pathlib import Path
-from contextlib import contextmanager
 from typing import Optional, List, Dict, Any
+from datetime import datetime
+from filelock import FileLock
 
 from .core.security import hash_password, verify_password
 
-DB_PATH = Path("srt_manager.db")
+CONFIG_FILE = Path("config.json")
+CONFIG_LOCK = Path("config.json.lock")
+
+
+def _load_config() -> Dict[str, Any]:
+    """Load full config from JSON file"""
+    if not CONFIG_FILE.exists():
+        return {"channels": [], "users": []}
+    try:
+        with open(CONFIG_FILE, 'r') as f:
+            data = json.load(f)
+            # Migration: if config is a list (old format), convert to new format
+            if isinstance(data, list):
+                return {"channels": data, "users": []}
+            return data
+    except (json.JSONDecodeError, IOError):
+        return {"channels": [], "users": []}
+
+
+def _save_config(config: Dict[str, Any]):
+    """Save full config to JSON file"""
+    with FileLock(CONFIG_LOCK):
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(config, f, indent=2, default=str)
+
+
+def _get_users() -> List[Dict[str, Any]]:
+    """Get users list from config"""
+    config = _load_config()
+    return config.get("users", [])
+
+
+def _save_users(users: List[Dict[str, Any]]):
+    """Save users list to config"""
+    config = _load_config()
+    config["users"] = users
+    _save_config(config)
+
+
+def _get_next_id(users: List[Dict[str, Any]]) -> int:
+    """Get next available user ID"""
+    if not users:
+        return 1
+    return max(u.get('id', 0) for u in users) + 1
+
+
+def _is_hashed_password(password: str) -> bool:
+    """Check if password is already hashed (bcrypt format)"""
+    return password.startswith('$2b$') or password.startswith('$2a$') or password.startswith('$2y$')
+
+
+def _hash_plain_passwords(users: List[Dict[str, Any]]) -> bool:
+    """Hash any plain text passwords in users list. Returns True if any were hashed."""
+    changed = False
+    for user in users:
+        password = user.get('hashed_password', '') or user.get('password', '')
+        if password and not _is_hashed_password(password):
+            user['hashed_password'] = hash_password(password)
+            if 'password' in user:
+                del user['password']
+            changed = True
+            print(f"Password hashed for user: {user.get('username')}")
+    return changed
 
 
 def init_database():
-    """Initialize the SQLite database with users table"""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+    """Initialize config with default admin user if no users exist"""
+    config = _load_config()
+    users = config.get("users", [])
+    changed = False
 
-    # Create users table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            hashed_password TEXT NOT NULL,
-            email TEXT,
-            is_active INTEGER DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
+    # Hash any plain text passwords
+    if _hash_plain_passwords(users):
+        changed = True
 
-    # Create default admin user if not exists
-    cursor.execute('SELECT COUNT(*) FROM users WHERE username = ?', ('admin',))
-    if cursor.fetchone()[0] == 0:
-        hashed_password = hash_password('admin')
-        cursor.execute('''
-            INSERT INTO users (username, hashed_password, email)
-            VALUES (?, ?, ?)
-        ''', ('admin', hashed_password, 'admin@localhost'))
+    # Create default admin user if no users exist
+    admin_exists = any(u.get('username') == 'admin' for u in users)
+    if not admin_exists:
+        users.append({
+            'id': _get_next_id(users),
+            'username': 'admin',
+            'hashed_password': hash_password('admin'),
+            'email': 'admin@localhost',
+            'is_active': True,
+            'created_at': datetime.now().isoformat()
+        })
+        changed = True
         print("Default admin user created (admin/admin)")
 
-    conn.commit()
-    conn.close()
-
-
-@contextmanager
-def get_db():
-    """Context manager for database connections"""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
+    if changed:
+        config["users"] = users
+        _save_config(config)
 
 
 def get_user_by_username(username: str) -> Optional[Dict[str, Any]]:
-    """Get user from database by username"""
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
-        row = cursor.fetchone()
-        if row:
-            return dict(row)
+    """Get user by username"""
+    users = _get_users()
+    for user in users:
+        if user.get('username') == username:
+            return user
     return None
 
 
 def create_user(username: str, password: str, email: str = None) -> bool:
     """Create a new user"""
-    hashed_password = hash_password(password)
-    with get_db() as conn:
-        cursor = conn.cursor()
-        try:
-            cursor.execute('''
-                INSERT INTO users (username, hashed_password, email)
-                VALUES (?, ?, ?)
-            ''', (username, hashed_password, email))
-            conn.commit()
-            return True
-        except sqlite3.IntegrityError:
-            return False
+    users = _get_users()
+
+    # Check if username already exists
+    if any(u.get('username') == username for u in users):
+        return False
+
+    users.append({
+        'id': _get_next_id(users),
+        'username': username,
+        'hashed_password': hash_password(password),
+        'email': email,
+        'is_active': True,
+        'created_at': datetime.now().isoformat()
+    })
+    _save_users(users)
+    return True
 
 
 def update_user_password(username: str, new_password: str) -> bool:
     """Update user password"""
-    hashed_password = hash_password(new_password)
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            UPDATE users
-            SET hashed_password = ?
-            WHERE username = ?
-        ''', (hashed_password, username))
-        conn.commit()
-        return cursor.rowcount > 0
+    users = _get_users()
+
+    for user in users:
+        if user.get('username') == username:
+            user['hashed_password'] = hash_password(new_password)
+            _save_users(users)
+            return True
+    return False
 
 
 def delete_user(username: str) -> bool:
-    """Delete a user"""
+    """Delete a user (cannot delete admin)"""
     if username == 'admin':
-        return False  # Prevent deleting admin
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute('DELETE FROM users WHERE username = ?', (username,))
-        conn.commit()
-        return cursor.rowcount > 0
+        return False
+
+    users = _get_users()
+    original_count = len(users)
+    users = [u for u in users if u.get('username') != username]
+
+    if len(users) < original_count:
+        _save_users(users)
+        return True
+    return False
 
 
 def list_users() -> List[Dict[str, Any]]:
-    """List all users"""
-    with get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT id, username, email, is_active, created_at FROM users')
-        return [dict(row) for row in cursor.fetchall()]
+    """List all users (without passwords)"""
+    users = _get_users()
+    return [
+        {
+            'id': u.get('id'),
+            'username': u.get('username'),
+            'email': u.get('email'),
+            'is_active': u.get('is_active'),
+            'created_at': u.get('created_at')
+        }
+        for u in users
+    ]
 
 
 def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:
-    """Authenticate a user against database"""
-    user_dict = get_user_by_username(username)
-    if not user_dict:
+    """Authenticate a user"""
+    user = get_user_by_username(username)
+    if not user:
         return None
-    if not verify_password(password, user_dict['hashed_password']):
+    if not verify_password(password, user.get('hashed_password', '')):
         return None
-    return user_dict
+    return user

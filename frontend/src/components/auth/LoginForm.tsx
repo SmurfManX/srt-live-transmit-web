@@ -271,11 +271,8 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           transition={{ delay: 0.5, duration: 0.4 }}
           className="mt-8 pt-6 border-t border-[#eee] dark:border-[#222]"
         >
-          <p className="text-xs text-center text-[#999] dark:text-[#666]">
-            Default: <span className="font-mono">admin / admin</span>
-          </p>
-          <p className="text-xs text-center text-[#bbb] dark:text-[#444] mt-3">
-            SRT Live Transmit Web v3.0
+          <p className="text-xs text-center text-[#bbb] dark:text-[#444]">
+            SRT Manager v3.0
           </p>
         </motion.div>
       </motion.div>

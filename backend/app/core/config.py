@@ -16,9 +16,6 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
 
-    # Database
-    DATABASE_URL: str = "sqlite:///./srt_manager.db"
-
     # CORS - CRITICAL: Specify exact domains in production!
     CORS_ORIGINS: str = "http://localhost:3000"
 
