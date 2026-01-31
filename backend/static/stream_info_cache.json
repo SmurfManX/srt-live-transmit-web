@@ -1,0 +1,153 @@
+{
+  "test": {
+    "channel_name": "test",
+    "status": "offline",
+    "success": true,
+    "probe_url": "udp://@233.23.23.100:23100?timeout=3000000&buffer_size=1000000",
+    "format": "mpegts",
+    "total_bitrate": null,
+    "total_bitrate_mbps": null,
+    "video_streams": [
+      {
+        "index": 0,
+        "codec": "h264",
+        "profile": "High",
+        "width": 1920,
+        "height": 1080,
+        "resolution": "1920x1080",
+        "fps": 25.0,
+        "bitrate": null,
+        "pix_fmt": "yuv420p"
+      }
+    ],
+    "audio_streams": [
+      {
+        "index": 1,
+        "codec": "aac",
+        "sample_rate": 44100,
+        "channels": 2,
+        "channel_layout": "stereo",
+        "bitrate": 128332,
+        "language": "kat"
+      }
+    ],
+    "video_count": 1,
+    "audio_count": 1,
+    "last_update": "2026-01-30T20:26:08.352571"
+  },
+  "sdsd": {
+    "channel_name": "sdsd",
+    "status": "offline",
+    "success": true,
+    "probe_url": "udp://@233.23.23.100:23100?timeout=3000000&buffer_size=1000000",
+    "format": "mpegts",
+    "total_bitrate": null,
+    "total_bitrate_mbps": null,
+    "video_streams": [
+      {
+        "index": 0,
+        "codec": "h264",
+        "profile": "High",
+        "width": 1920,
+        "height": 1080,
+        "resolution": "1920x1080",
+        "fps": 25.0,
+        "bitrate": null,
+        "pix_fmt": "yuv420p"
+      }
+    ],
+    "audio_streams": [
+      {
+        "index": 1,
+        "codec": "aac",
+        "sample_rate": 44100,
+        "channels": 2,
+        "channel_layout": "stereo",
+        "bitrate": 127789,
+        "language": "kat"
+      }
+    ],
+    "video_count": 1,
+    "audio_count": 1,
+    "last_update": "2026-01-31T19:16:35.482557"
+  },
+  "esdffds": {
+    "channel_name": "esdffds",
+    "status": "offline",
+    "error": "Probe failed",
+    "probe_url": "udp://@233.23.23.100:23101?timeout=3000000&buffer_size=1000000",
+    "last_update": "2026-01-30T21:29:03.157008"
+  },
+  "sts": {
+    "channel_name": "sts",
+    "status": "offline",
+    "success": true,
+    "probe_url": "udp://@233.23.23.101:23101?timeout=3000000&buffer_size=1000000",
+    "format": "mpegts",
+    "total_bitrate": null,
+    "total_bitrate_mbps": null,
+    "video_streams": [
+      {
+        "index": 0,
+        "codec": "h264",
+        "profile": "Main",
+        "width": 1920,
+        "height": 1080,
+        "resolution": "1920x1080",
+        "fps": 25.0,
+        "bitrate": null,
+        "pix_fmt": "yuv420p"
+      }
+    ],
+    "audio_streams": [
+      {
+        "index": 1,
+        "codec": "aac",
+        "sample_rate": 48000,
+        "channels": 2,
+        "channel_layout": "stereo",
+        "bitrate": 320004,
+        "language": "eng"
+      }
+    ],
+    "video_count": 1,
+    "audio_count": 1,
+    "last_update": "2026-01-31T19:05:23.551711"
+  },
+  "UHD": {
+    "channel_name": "UHD",
+    "status": "online",
+    "success": true,
+    "probe_url": "udp://@233.23.23.100:23100?timeout=3000000&buffer_size=1000000",
+    "format": "mpegts",
+    "total_bitrate": null,
+    "total_bitrate_mbps": null,
+    "video_streams": [
+      {
+        "index": 0,
+        "codec": "h264",
+        "profile": "High",
+        "width": 1920,
+        "height": 1080,
+        "resolution": "1920x1080",
+        "fps": 25.0,
+        "bitrate": null,
+        "pix_fmt": "yuv420p"
+      }
+    ],
+    "audio_streams": [
+      {
+        "index": 1,
+        "codec": "aac",
+        "sample_rate": 44100,
+        "channels": 2,
+        "channel_layout": "stereo",
+        "bitrate": 128031,
+        "language": "kat"
+      }
+    ],
+    "video_count": 1,
+    "audio_count": 1,
+    "last_update": "2026-01-31T19:54:32.635434"
+  }
+}

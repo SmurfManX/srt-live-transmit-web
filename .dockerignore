@@ -1,0 +1,31 @@
+# Backend
+backend/__pycache__
+backend/*.pyc
+backend/.pytest_cache
+backend/venv
+backend/.venv
+backend/data
+backend/logs
+backend/stats
+backend/.env
+backend/.env.local
+
+# Frontend
+frontend/node_modules
+frontend/.next
+frontend/out
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# General
+.git
+.gitignore
+*.md
+!README.md
+.DS_Store
+*.log
+.vscode
+.idea

@@ -1,0 +1,1 @@
+"""SRT Manager Backend Application"""

@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+*.egg-info/
+dist/
+build/
+
+# Database
+*.db
+*.sqlite3
+srt_manager.db
+
+# Configuration
+.env
+.env.local
+config.json
+config.json.backup
+
+# Logs
+logs/
+*.log
+backend.log
+frontend.log
+
+# Static files
+static/uploads/
+static/stats/
+static/logs/
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.turbo
+frontend/.pnp
+frontend/.pnp.js
+
+# Testing
+frontend/coverage/
+backend/.pytest_cache/
+backend/.coverage
+backend/htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+.directory
+
+# Temporary files
+*.tmp
+*.bak
+*~
