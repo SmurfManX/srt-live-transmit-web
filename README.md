@@ -1,4 +1,4 @@
-# StreamForge
+# SRT Manager
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-green.svg)](https://python.org)
@@ -68,7 +68,7 @@
 
 ## Quick Start
 
-The fastest way to get StreamForge running is with Docker:
+The fastest way to get SRT Manager running is with Docker:
 
 ```bash
 git clone https://github.com/yourusername/streamforge.git
@@ -278,7 +278,7 @@ Connect to `ws://localhost:8000/ws` for real-time updates:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        StreamForge                          │
+│                        SRT Manager                          │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ┌─────────────┐         ┌─────────────────────────────┐   │
