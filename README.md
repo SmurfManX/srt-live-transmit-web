@@ -74,8 +74,8 @@
 The fastest way to get SRT Manager running is with Docker:
 
 ```bash
-git clone https://github.com/yourusername/streamforge.git
-cd streamforge
+git clone https://github.com/SmurfManX/srt-live-transmit-web.git
+cd srt-live-transmit-web
 docker-compose up -d
 ```
 
@@ -97,8 +97,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 #### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/streamforge.git
-cd streamforge
+git clone https://github.com/SmurfManX/srt-live-transmit-web.git
+cd srt-live-transmit-web
 ```
 
 #### 2. Backend setup
