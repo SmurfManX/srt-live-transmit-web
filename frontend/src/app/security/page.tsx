@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Shield, UserPlus, Trash2, Key, Lock, Users, AlertTriangle, ArrowLeft, Settings, Moon, Sun, LogOut } from 'lucide-react'
+import { Shield, UserPlus, Trash2, Key, Lock, Users, ArrowLeft, Moon, Sun } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 type UserRole = 'admin' | 'readonly'
@@ -339,7 +339,7 @@ export default function SecurityPage() {
                     </td>
                     <td className="px-4 py-3">
                       {user.username === 'admin' ? (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
                           Admin
                         </span>
                       ) : (
@@ -382,20 +382,6 @@ export default function SecurityPage() {
           </table>
         </div>
 
-        {/* Info Box */}
-        <div className="mt-6 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800 p-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-medium text-orange-800 dark:text-orange-200 mb-1">Security Notes</h3>
-              <ul className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
-                <li>• Admin users can create, edit, delete channels and manage users</li>
-                <li>• Readonly users can only view channels and statistics</li>
-                <li>• The default admin user cannot be deleted or demoted</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   )
