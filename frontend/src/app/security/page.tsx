@@ -1,10 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import Button from '@/components/ui/Button'
-import Badge from '@/components/ui/Badge'
-import { Shield, UserPlus, Trash2, Key, Lock, Users, AlertTriangle } from 'lucide-react'
+import { Shield, UserPlus, Trash2, Key, Lock, Users, AlertTriangle, ArrowLeft, Settings, Moon, Sun, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 type UserRole = 'admin' | 'readonly'
@@ -38,6 +35,7 @@ export default function SecurityPage() {
   const [showAddUser, setShowAddUser] = useState(false)
   const [newUser, setNewUser] = useState({ username: '', email: '', password: '', role: 'readonly' as UserRole })
   const [currentUser, setCurrentUser] = useState<string>('')
+  const [darkMode, setDarkMode] = useState(false)
 
   useEffect(() => {
     fetchUsers()
@@ -142,312 +140,263 @@ export default function SecurityPage() {
     }
   }
 
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode)
+    document.documentElement.classList.toggle('dark')
+  }
+
   return (
-    <div className="min-h-screen bg-[#F8F6F4] dark:bg-[#1F1A17] p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-[#1F2937] dark:text-[#F9FAFB]">Security</h1>
-            <p className="text-[#6B7280] mt-1">User management and access control</p>
+    <div className="min-h-screen bg-[#f5f5f5] dark:bg-[#111]">
+      {/* Header */}
+      <header className="bg-white dark:bg-[#1a1a1a] border-b border-[#e5e5e5] dark:border-[#333] px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#111] dark:bg-white flex items-center justify-center">
+              <Shield className="w-5 h-5 text-white dark:text-[#111]" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-[#111] dark:text-white">Security & Users</h1>
+              <p className="text-sm text-[#666] dark:text-[#888]">Manage users and access control</p>
+            </div>
           </div>
-          <div className="flex gap-3">
-            <Button onClick={() => setShowAddUser(!showAddUser)}>
-              <UserPlus className="h-4 w-4" />
-              Add User
-            </Button>
-            <Button variant="outline" onClick={() => router.push('/')}>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push('/')}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1a1a1a] border border-[#e5e5e5] dark:border-[#333] text-[#111] dark:text-white rounded-lg hover:bg-[#f0f0f0] dark:hover:bg-[#333] transition-colors text-sm font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
               Back to Dashboard
-            </Button>
+            </button>
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 hover:bg-[#f0f0f0] dark:hover:bg-[#333] rounded-lg transition-colors text-[#111] dark:text-[#ccc]"
+            >
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-6">
+        {/* Stats */}
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-4 border border-[#e5e5e5] dark:border-[#333]">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-[#111] dark:text-white">{users.length}</div>
+                <div className="text-sm text-[#666] dark:text-[#888]">Total Users</div>
+              </div>
+              <Users className="w-8 h-8 text-[#666] dark:text-[#888]" />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-4 border border-[#e5e5e5] dark:border-[#333]">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-blue-600">{users.filter(u => u.role === 'admin').length}</div>
+                <div className="text-sm text-[#666] dark:text-[#888]">Admin Users</div>
+              </div>
+              <Shield className="w-8 h-8 text-blue-600" />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-4 border border-[#e5e5e5] dark:border-[#333]">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-green-600">{users.filter(u => u.role === 'readonly').length}</div>
+                <div className="text-sm text-[#666] dark:text-[#888]">Readonly Users</div>
+              </div>
+              <Key className="w-8 h-8 text-green-600" />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-4 border border-[#e5e5e5] dark:border-[#333]">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-orange-600">1</div>
+                <div className="text-sm text-[#666] dark:text-[#888]">Active Sessions</div>
+              </div>
+              <Lock className="w-8 h-8 text-orange-600" />
+            </div>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm text-[#6B7280] mb-1">Total Users</div>
-                  <div className="text-3xl font-bold text-[#4A8B57]">{users.length}</div>
-                </div>
-                <Users className="h-8 w-8 text-[#4A8B57]" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm text-[#6B7280] mb-1">Admin Users</div>
-                  <div className="text-3xl font-bold text-[#3B82F6]">
-                    {users.filter(u => u.role === 'admin').length}
-                  </div>
-                </div>
-                <Shield className="h-8 w-8 text-[#3B82F6]" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm text-[#6B7280] mb-1">Active Sessions</div>
-                  <div className="text-3xl font-bold text-[#B8935E]">1</div>
-                </div>
-                <Key className="h-8 w-8 text-[#B8935E]" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm text-[#6B7280] mb-1">Encrypted Channels</div>
-                  <div className="text-3xl font-bold text-[#D97706]">--</div>
-                </div>
-                <Lock className="h-8 w-8 text-[#D97706]" />
-              </div>
-            </CardContent>
-          </Card>
+        {/* Action Bar */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-[#111] dark:text-white">User Accounts</h2>
+          <button
+            onClick={() => setShowAddUser(!showAddUser)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#111] dark:bg-white text-white dark:text-[#111] rounded-lg hover:bg-[#333] dark:hover:bg-[#eee] transition-colors text-sm font-medium"
+          >
+            <UserPlus className="w-4 h-4" />
+            Add User
+          </button>
         </div>
 
         {/* Add User Form */}
         {showAddUser && (
-          <Card className="border-2 border-[#4A8B57]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5 text-[#4A8B57]" />
-                Add New User
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block text-[#1F2937] dark:text-[#F9FAFB]">Username *</label>
-                  <input
-                    type="text"
-                    placeholder="username"
-                    value={newUser.username}
-                    onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-                    className="w-full px-4 py-2 h-11 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] dark:text-white focus:border-[#4A8B57] outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block text-[#1F2937] dark:text-[#F9FAFB]">Email</label>
-                  <input
-                    type="email"
-                    placeholder="user@example.com"
-                    value={newUser.email}
-                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                    className="w-full px-4 py-2 h-11 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] dark:text-white focus:border-[#4A8B57] outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block text-[#1F2937] dark:text-[#F9FAFB]">Password *</label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    value={newUser.password}
-                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                    className="w-full px-4 py-2 h-11 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] dark:text-white focus:border-[#4A8B57] outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block text-[#1F2937] dark:text-[#F9FAFB]">Role *</label>
-                  <select
-                    className="w-full px-4 py-2 h-11 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] dark:text-white focus:border-[#4A8B57] outline-none"
-                    value={newUser.role}
-                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value as UserRole })}
-                  >
-                    <option value="readonly">Readonly</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Button onClick={handleAddUser}>
-                  Create User
-                </Button>
-                <Button variant="outline" onClick={() => setShowAddUser(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Users List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>User Accounts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {users.length === 0 ? (
-              <div className="p-12 text-center text-[#6B7280]">No users found</div>
-            ) : (
-              <div className="space-y-3">
-                {users.map((user) => (
-                  <div
-                    key={user.username}
-                    className="p-4 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] hover:border-[#4A8B57] transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-full bg-[#4A8B57]/10">
-                          <Users className="h-5 w-5 text-[#4A8B57]" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <div className="font-semibold">{user.username}</div>
-                            {user.role === 'admin' ? (
-                              <Badge variant="default">Admin</Badge>
-                            ) : (
-                              <Badge variant="outline">Readonly</Badge>
-                            )}
-                            {user.username === currentUser && (
-                              <Badge variant="success">Current</Badge>
-                            )}
-                          </div>
-                          {user.email && (
-                            <div className="text-sm text-[#6B7280]">{user.email}</div>
-                          )}
-                          <div className="text-xs text-[#6B7280] mt-1">
-                            Created: {new Date(user.created_at).toLocaleDateString()}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {user.username !== 'admin' && (
-                          <select
-                            className="px-3 py-1.5 text-sm rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] focus:border-[#4A8B57] outline-none"
-                            value={user.role}
-                            onChange={(e) => handleChangeRole(user.username, e.target.value as UserRole)}
-                          >
-                            <option value="readonly">Readonly</option>
-                            <option value="admin">Admin</option>
-                          </select>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={user.username === 'admin'}
-                        >
-                          <Key className="h-4 w-4" />
-                          Reset Password
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDeleteUser(user.username)}
-                          disabled={user.username === 'admin' || user.username === currentUser}
-                        >
-                          <Trash2 className="h-4 w-4 text-[#B91C1C]" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Security Settings */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Key className="h-5 w-5 text-[#B8935E]" />
-                AES Encryption Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-lg border border-[#e5e5e5] dark:border-[#333] p-6 mb-6">
+            <h3 className="text-lg font-semibold text-[#111] dark:text-white mb-4 flex items-center gap-2">
+              <UserPlus className="w-5 h-5" />
+              Add New User
+            </h3>
+            <div className="grid grid-cols-4 gap-4 mb-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Default Key Length</label>
-                <select
-                  className="w-full px-4 py-2 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] focus:border-[#4A8B57] outline-none"
-                  defaultValue="32"
-                >
-                  <option value="16">AES-128 (16 bytes)</option>
-                  <option value="24">AES-192 (24 bytes)</option>
-                  <option value="32">AES-256 (32 bytes)</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Require Encryption</label>
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" className="w-4 h-4 rounded border-[#E5E7EB] text-[#4A8B57] focus:ring-[#4A8B57]" />
-                  <span className="text-sm text-[#6B7280]">Force encryption on all new channels</span>
-                </div>
-              </div>
-              <Button variant="outline">
-                Save Settings
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5 text-[#3B82F6]" />
-                Session Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Token Expiration (minutes)</label>
+                <label className="block text-sm font-medium text-[#333] dark:text-[#ccc] mb-1">Username *</label>
                 <input
-                  type="number"
-                  defaultValue="1440"
-                  className="w-full px-4 py-2 h-11 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] dark:text-white focus:border-[#4A8B57] outline-none"
+                  type="text"
+                  placeholder="username"
+                  value={newUser.username}
+                  onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-[#333] bg-white dark:bg-[#111] text-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#111] dark:focus:ring-white"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">Auto Logout After</label>
-                <select
-                  className="w-full px-4 py-2 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] focus:border-[#4A8B57] outline-none"
-                  defaultValue="60"
-                >
-                  <option value="30">30 minutes</option>
-                  <option value="60">1 hour</option>
-                  <option value="120">2 hours</option>
-                  <option value="0">Never</option>
-                </select>
-              </div>
-              <Button variant="outline">
-                Save Settings
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Security Warning */}
-        <Card className="bg-[#D97706]/10 border-[#D97706]/20">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="p-2 rounded-lg bg-[#D97706]/20">
-                <AlertTriangle className="h-5 w-5 text-[#D97706]" />
+                <label className="block text-sm font-medium text-[#333] dark:text-[#ccc] mb-1">Email</label>
+                <input
+                  type="email"
+                  placeholder="user@example.com"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-[#333] bg-white dark:bg-[#111] text-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#111] dark:focus:ring-white"
+                />
               </div>
               <div>
-                <h3 className="font-semibold text-[#1F2937] dark:text-[#F9FAFB] mb-1">
-                  Security Best Practices
-                </h3>
-                <ul className="text-sm text-[#6B7280] space-y-1 list-disc list-inside">
-                  <li>Always use AES-256 encryption for sensitive streams</li>
-                  <li>Rotate passphrases regularly (recommended: every 90 days)</li>
-                  <li>Use strong, unique passwords for all user accounts</li>
-                  <li>Monitor access logs for suspicious activity</li>
-                  <li>Keep SRT-live-transmit and all dependencies up to date</li>
-                </ul>
+                <label className="block text-sm font-medium text-[#333] dark:text-[#ccc] mb-1">Password *</label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-[#333] bg-white dark:bg-[#111] text-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#111] dark:focus:ring-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#333] dark:text-[#ccc] mb-1">Role *</label>
+                <select
+                  value={newUser.role}
+                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value as UserRole })}
+                  className="w-full px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-[#333] bg-white dark:bg-[#111] text-[#111] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#111] dark:focus:ring-white"
+                >
+                  <option value="readonly">Readonly</option>
+                  <option value="admin">Admin</option>
+                </select>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleAddUser}
+                className="px-4 py-2 bg-[#111] dark:bg-white text-white dark:text-[#111] rounded-lg hover:bg-[#333] dark:hover:bg-[#eee] transition-colors text-sm font-medium"
+              >
+                Create User
+              </button>
+              <button
+                onClick={() => setShowAddUser(false)}
+                className="px-4 py-2 bg-white dark:bg-[#1a1a1a] border border-[#e5e5e5] dark:border-[#333] text-[#111] dark:text-white rounded-lg hover:bg-[#f0f0f0] dark:hover:bg-[#333] transition-colors text-sm font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Users Table */}
+        <div className="bg-white dark:bg-[#1a1a1a] rounded-lg border border-[#e5e5e5] dark:border-[#333] overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-[#f9f9f9] dark:bg-[#222] border-b border-[#e5e5e5] dark:border-[#333]">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#666] dark:text-[#888] uppercase">User</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#666] dark:text-[#888] uppercase">Email</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#666] dark:text-[#888] uppercase">Role</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#666] dark:text-[#888] uppercase">Created</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-[#666] dark:text-[#888] uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#e5e5e5] dark:divide-[#333]">
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-[#666] dark:text-[#888]">
+                    No users found
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <tr key={user.username} className="hover:bg-[#f9f9f9] dark:hover:bg-[#222]">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[#111] dark:bg-white flex items-center justify-center text-white dark:text-[#111] text-sm font-bold">
+                          {user.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="font-medium text-[#111] dark:text-white">{user.username}</div>
+                          {user.username === currentUser && (
+                            <span className="text-xs text-green-600">(You)</span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#666] dark:text-[#888]">
+                      {user.email || '-'}
+                    </td>
+                    <td className="px-4 py-3">
+                      {user.username === 'admin' ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                          Admin
+                        </span>
+                      ) : (
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleChangeRole(user.username, e.target.value as UserRole)}
+                          className="px-2 py-1 rounded text-xs border border-[#e5e5e5] dark:border-[#333] bg-white dark:bg-[#111] text-[#111] dark:text-white"
+                        >
+                          <option value="readonly">Readonly</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#666] dark:text-[#888]">
+                      {new Date(user.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          className="p-1.5 hover:bg-[#f0f0f0] dark:hover:bg-[#333] rounded transition-colors text-[#666] dark:text-[#888] disabled:opacity-50"
+                          disabled={user.username === 'admin'}
+                          title="Reset Password"
+                        >
+                          <Key className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.username)}
+                          className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors text-red-600 disabled:opacity-50"
+                          disabled={user.username === 'admin' || user.username === currentUser}
+                          title="Delete User"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Info Box */}
+        <div className="mt-6 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-medium text-orange-800 dark:text-orange-200 mb-1">Security Notes</h3>
+              <ul className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
+                <li>• Admin users can create, edit, delete channels and manage users</li>
+                <li>• Readonly users can only view channels and statistics</li>
+                <li>• The default admin user cannot be deleted or demoted</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   )
 }
