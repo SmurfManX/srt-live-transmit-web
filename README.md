@@ -65,7 +65,7 @@
 ![Logs](screenshots/logs.png)
 
 ### User Management
-![Users](screenshots/users.png)
+![Users](screenshots/users.png?v=2)
 
 ---
 
