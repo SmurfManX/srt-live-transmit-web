@@ -53,7 +53,7 @@
 ![Channel Details](screenshots/channel-details.png)
 
 ### Create Channel
-![Create Channel](screenshots/create-channel.png)
+![Create Channel](screenshots/create-channel.png?v=2)
 
 ### Stream Info
 ![Stream Info](screenshots/stream-info.png)
