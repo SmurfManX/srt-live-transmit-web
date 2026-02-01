@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu, Moon, Sun, User, LogOut, Bell } from 'lucide-react'
+import { Menu, Moon, Sun, User, LogOut, Bell, Shield, Settings, Download, Upload } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useStore } from '@/store/useStore'
 import { useThemeMode } from '@/app/providers'
 import { DRAWER_WIDTH } from './Sidebar'
@@ -30,9 +31,13 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onToggleSidebar }: NavbarProps) {
+  const router = useRouter()
   const { currentUser, setAuth } = useStore()
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false)
   const { mode, toggleTheme } = useThemeMode()
+
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.username === 'admin'
 
   const handleLogout = () => {
     setAuth(false, null, null)
@@ -112,6 +117,62 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
               <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-gradient-to-br from-red-500 to-rose-600 rounded-full shadow-elegant animate-pulse"></span>
             </button>
 
+            {/* Settings Menu */}
+            <div className="relative">
+                <button
+                  onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+                  className="p-2.5 hover:bg-primary/10 hover:text-primary rounded-xl transition-smooth interactive-scale shadow-soft"
+                  title="Settings"
+                >
+                  <Settings className="h-5 w-5" />
+                </button>
+
+                {showSettingsMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowSettingsMenu(false)}
+                    />
+                    <div className="absolute right-0 mt-3 w-56 animate-scale-in glass-light dark:glass-dark rounded-2xl shadow-luxury border-2 border-border/60 z-50 overflow-hidden">
+                      <div className="py-2">
+                        <button
+                          className="w-full flex items-center gap-3 px-5 py-3 hover:bg-primary/10 hover:text-primary transition-smooth text-left group"
+                          onClick={() => {
+                            setShowSettingsMenu(false)
+                            router.push('/security')
+                          }}
+                        >
+                          <Shield className="h-5 w-5 transition-smooth" />
+                          <span className="text-sm font-semibold">
+                            Security & Users
+                          </span>
+                        </button>
+
+                        <button
+                          className="w-full flex items-center gap-3 px-5 py-3 hover:bg-primary/10 hover:text-primary transition-smooth text-left group opacity-50 cursor-not-allowed"
+                          disabled
+                        >
+                          <Download className="h-5 w-5 transition-smooth" />
+                          <span className="text-sm font-semibold">
+                            Export Channels
+                          </span>
+                        </button>
+
+                        <button
+                          className="w-full flex items-center gap-3 px-5 py-3 hover:bg-primary/10 hover:text-primary transition-smooth text-left group opacity-50 cursor-not-allowed"
+                          disabled
+                        >
+                          <Upload className="h-5 w-5 transition-smooth" />
+                          <span className="text-sm font-semibold">
+                            Import Channels
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
             {/* User Menu */}
             <div className="relative">
               <button
@@ -152,8 +213,8 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                           <div className="font-bold text-base text-foreground">
                             {currentUser?.username || 'User'}
                           </div>
-                          <div className="text-xs text-muted-foreground font-medium">
-                            Administrator
+                          <div className="text-xs text-muted-foreground font-medium capitalize">
+                            {currentUser?.role || 'User'}
                           </div>
                         </div>
                       </div>
@@ -178,6 +239,21 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                           Profile Settings
                         </span>
                       </button>
+
+                      {isAdmin && (
+                        <button
+                          className="w-full flex items-center gap-3 px-5 py-3 hover:bg-primary/10 hover:text-primary transition-smooth text-left group"
+                          onClick={() => {
+                            setShowUserMenu(false)
+                            router.push('/security')
+                          }}
+                        >
+                          <Shield className="h-5 w-5 transition-smooth" />
+                          <span className="text-sm font-semibold">
+                            Security & Users
+                          </span>
+                        </button>
+                      )}
 
                       <button
                         className="w-full flex items-center gap-3 px-5 py-3 hover:bg-red-500/10 hover:text-red-600 transition-smooth text-left border-t-2 border-border/40 group"

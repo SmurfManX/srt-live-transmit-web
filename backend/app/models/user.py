@@ -1,7 +1,14 @@
 """User models for authentication"""
 
+from enum import Enum
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
+
+
+class UserRole(str, Enum):
+    """User role enum for access control"""
+    admin = "admin"
+    readonly = "readonly"
 
 
 class Token(BaseModel):
@@ -19,11 +26,15 @@ class UserBase(BaseModel):
     """Base user model"""
     username: str = Field(..., min_length=3, max_length=50)
     email: Optional[str] = None
+    role: UserRole = UserRole.readonly
 
 
-class UserCreate(UserBase):
+class UserCreate(BaseModel):
     """User creation model"""
+    username: str = Field(..., min_length=3, max_length=50)
+    email: Optional[str] = None
     password: str = Field(..., min_length=4, max_length=100)
+    role: UserRole = UserRole.readonly
 
 
 class User(UserBase):

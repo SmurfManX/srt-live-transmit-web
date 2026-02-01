@@ -7,6 +7,7 @@ from datetime import datetime
 from filelock import FileLock
 
 from .core.security import hash_password, verify_password
+from .models.user import UserRole
 
 CONFIG_FILE = Path("config.json")
 CONFIG_LOCK = Path("config.json.lock")
@@ -83,6 +84,16 @@ def init_database():
     if _hash_plain_passwords(users):
         changed = True
 
+    # Ensure all users have a role field (migration)
+    for user in users:
+        if 'role' not in user:
+            # Default existing admin user to admin role, others to readonly
+            if user.get('username') == 'admin':
+                user['role'] = UserRole.admin.value
+            else:
+                user['role'] = UserRole.readonly.value
+            changed = True
+
     # Create default admin user if no users exist
     admin_exists = any(u.get('username') == 'admin' for u in users)
     if not admin_exists:
@@ -92,6 +103,7 @@ def init_database():
             'hashed_password': hash_password('admin'),
             'email': 'admin@localhost',
             'is_active': True,
+            'role': UserRole.admin.value,
             'created_at': datetime.now().isoformat()
         })
         changed = True
@@ -111,7 +123,7 @@ def get_user_by_username(username: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def create_user(username: str, password: str, email: str = None) -> bool:
+def create_user(username: str, password: str, email: str = None, role: str = None) -> bool:
     """Create a new user"""
     users = _get_users()
 
@@ -119,12 +131,17 @@ def create_user(username: str, password: str, email: str = None) -> bool:
     if any(u.get('username') == username for u in users):
         return False
 
+    # Default to readonly role if not specified
+    if role is None:
+        role = UserRole.readonly.value
+
     users.append({
         'id': _get_next_id(users),
         'username': username,
         'hashed_password': hash_password(password),
         'email': email,
         'is_active': True,
+        'role': role,
         'created_at': datetime.now().isoformat()
     })
     _save_users(users)
@@ -167,10 +184,23 @@ def list_users() -> List[Dict[str, Any]]:
             'username': u.get('username'),
             'email': u.get('email'),
             'is_active': u.get('is_active'),
+            'role': u.get('role', UserRole.readonly.value),
             'created_at': u.get('created_at')
         }
         for u in users
     ]
+
+
+def update_user_role(username: str, role: str) -> bool:
+    """Update user role"""
+    users = _get_users()
+
+    for user in users:
+        if user.get('username') == username:
+            user['role'] = role
+            _save_users(users)
+            return True
+    return False
 
 
 def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:

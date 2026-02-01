@@ -10,9 +10,9 @@ from typing import List, Optional
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 
-from ..models.user import User
+from ..models.user import User, UserRole
 from ..models.channel import Channel, ChannelBase, ChannelUpdate
-from ..core.deps import get_current_active_user
+from ..core.deps import get_current_active_user, require_admin
 from ..core.websocket import manager
 from ..services.channel_service import (
     load_channels, save_channels, get_channel_by_name,
@@ -61,9 +61,9 @@ async def get_channel(
 @router.post("", response_model=Channel, status_code=201)
 async def create_channel(
     channel: ChannelBase,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_admin)
 ):
-    """Create new channel"""
+    """Create new channel (admin only)"""
     try:
         new_channel = service_create_channel(channel)
 
@@ -82,9 +82,9 @@ async def create_channel(
 async def update_channel(
     channel_name: str,
     update: ChannelUpdate,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_admin)
 ):
-    """Update channel"""
+    """Update channel (admin only)"""
     channels = load_channels()
 
     for i, channel in enumerate(channels):
@@ -117,9 +117,9 @@ async def update_channel(
 @router.delete("/{channel_name}")
 async def delete_channel(
     channel_name: str,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_admin)
 ):
-    """Delete channel"""
+    """Delete channel (admin only)"""
     success = service_delete_channel(channel_name)
     if not success:
         raise HTTPException(status_code=404, detail="Channel not found")
@@ -135,9 +135,9 @@ async def delete_channel(
 @router.post("/{channel_name}/start")
 async def start_channel(
     channel_name: str,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_admin)
 ):
-    """Start channel"""
+    """Start channel (admin only)"""
     channels = load_channels()
 
     for i, channel in enumerate(channels):
@@ -249,9 +249,9 @@ async def start_channel(
 @router.post("/{channel_name}/stop")
 async def stop_channel(
     channel_name: str,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_admin)
 ):
-    """Stop channel"""
+    """Stop channel (admin only)"""
     channels = load_channels()
 
     for i, channel in enumerate(channels):
@@ -281,9 +281,9 @@ async def stop_channel(
 @router.post("/{channel_name}/restart")
 async def restart_channel(
     channel_name: str,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_admin)
 ):
-    """Restart channel"""
+    """Restart channel (admin only)"""
     import asyncio
     await stop_channel(channel_name, current_user)
     await asyncio.sleep(1)
@@ -506,9 +506,9 @@ async def get_channel_logs(
 async def upload_logo(
     channel_name: str,
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_admin)
 ):
-    """Upload logo for channel"""
+    """Upload logo for channel (admin only)"""
     if not file.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail="File must be an image")
 

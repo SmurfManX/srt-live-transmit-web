@@ -324,17 +324,25 @@ export const systemAPI = {
 }
 
 // Users API
+export type UserRole = 'admin' | 'readonly'
+
 export const usersAPI = {
   getAll: () => fetchAPI<User[]>('/api/users'),
 
-  create: (username: string, password: string, email?: string) =>
-    fetchAPI<User>('/api/users', {
+  create: (username: string, password: string, email?: string, role: UserRole = 'readonly') =>
+    fetchAPI<User>('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ username, password, email }),
+      body: JSON.stringify({ username, password, email, role }),
     }),
 
   delete: (username: string) =>
     fetchAPI<{ message: string }>(`/api/users/${username}`, {
       method: 'DELETE',
+    }),
+
+  updateRole: (username: string, role: UserRole) =>
+    fetchAPI<{ message: string }>(`/api/users/${username}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
     }),
 }

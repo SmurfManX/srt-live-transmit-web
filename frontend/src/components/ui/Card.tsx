@@ -9,7 +9,7 @@ const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
         'rounded-2xl border-2 border-border/50 bg-card text-card-foreground shadow-elegant backdrop-blur-sm',
         'hover:shadow-luxury hover:border-primary/30 hover-lift transition-smooth',
         'relative overflow-hidden',
-        'before:absolute before:inset-0 before:bg-gradient-mesh-light dark:before:bg-gradient-mesh-dark before:opacity-50',
+        'before:absolute before:inset-0 before:bg-gradient-mesh-light dark:before:bg-gradient-mesh-dark before:opacity-50 before:pointer-events-none',
         className
       )}
       {...props}
@@ -22,7 +22,7 @@ const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('flex flex-col space-y-1.5 p-6', className)}
+      className={cn('flex flex-col space-y-1.5 p-6 relative z-10', className)}
       {...props}
     />
   )
@@ -53,7 +53,7 @@ CardDescription.displayName = 'CardDescription'
 
 const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
+    <div ref={ref} className={cn('p-6 pt-0 relative z-10', className)} {...props} />
   )
 )
 CardContent.displayName = 'CardContent'

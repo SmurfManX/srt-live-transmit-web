@@ -623,8 +623,8 @@ export default function ChannelDetailModal({
 
             {/* Logs Tab */}
             {activeTab === 'logs' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
+              <div className="flex flex-col h-full gap-4">
+                <div className="flex-shrink-0 flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <span className="text-sm text-gray-500 dark:text-gray-400">{logs.length} log entries</span>
                   </div>
@@ -635,7 +635,7 @@ export default function ChannelDetailModal({
                   </div>
                 </div>
 
-                <div className="font-mono text-xs bg-[#1a1a2e] text-gray-100 p-4 rounded-xl overflow-x-auto max-h-[500px] overflow-y-auto">
+                <div className="flex-1 font-mono text-xs bg-[#1a1a2e] text-gray-100 p-4 rounded-xl overflow-x-auto overflow-y-auto min-h-0">
                   {logs.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">No logs available</div>
                   ) : (

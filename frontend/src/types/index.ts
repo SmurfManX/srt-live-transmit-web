@@ -152,6 +152,7 @@ export interface User {
   id: number
   username: string
   email?: string
+  role: 'admin' | 'readonly'
   created_at: string
 }
 

@@ -5,8 +5,8 @@ import { Channel, User } from '@/types'
 interface AppState {
   // Auth
   isAuthenticated: boolean
-  currentUser: { username: string; token: string } | null
-  setAuth: (authenticated: boolean, user: string | null, token?: string) => void
+  currentUser: { username: string; token: string; role?: string } | null
+  setAuth: (authenticated: boolean, user: string | null, token?: string, role?: string) => void
   logout: () => void
 
   // Channels
@@ -32,10 +32,10 @@ export const useStore = create<AppState>()(
       // Auth
       isAuthenticated: false,
       currentUser: null,
-      setAuth: (authenticated, user, token) =>
+      setAuth: (authenticated, user, token, role) =>
         set({
           isAuthenticated: authenticated,
-          currentUser: user && token ? { username: user, token } : null
+          currentUser: user && token ? { username: user, token, role } : null
         }),
       logout: () => set({ isAuthenticated: false, currentUser: null, channels: [] }),
 

@@ -36,8 +36,16 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     try {
       const response = await authAPI.login(username, password)
 
+      // Fetch user info to get role
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const userInfoRes = await fetch(`${API_BASE}/api/auth/me`, {
+        headers: { 'Authorization': `Bearer ${response.access_token}` }
+      })
+      const userInfo = userInfoRes.ok ? await userInfoRes.json() : { role: 'readonly' }
+      const userRole = userInfo.role || 'readonly'
+
       // Save to store
-      setAuth(true, username, response.access_token)
+      setAuth(true, username, response.access_token, userRole)
 
       // Save to localStorage
       const storageData = {
@@ -45,7 +53,8 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           isAuthenticated: true,
           currentUser: {
             username: username,
-            token: response.access_token
+            token: response.access_token,
+            role: userRole
           },
           darkMode: false,
           viewMode: 'grid'

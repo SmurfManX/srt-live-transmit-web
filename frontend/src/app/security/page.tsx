@@ -3,23 +3,40 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
 import Badge from '@/components/ui/Badge'
 import { Shield, UserPlus, Trash2, Key, Lock, Users, AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
+type UserRole = 'admin' | 'readonly'
+
 interface User {
   username: string
   email?: string
+  role: UserRole
   created_at: string
   last_login?: string
 }
+
+// Get token from the app's storage format
+function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const storage = localStorage.getItem('srt-manager-storage')
+    if (!storage) return null
+    const parsed = JSON.parse(storage)
+    return parsed?.state?.currentUser?.token || null
+  } catch {
+    return null
+  }
+}
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 export default function SecurityPage() {
   const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [showAddUser, setShowAddUser] = useState(false)
-  const [newUser, setNewUser] = useState({ username: '', email: '', password: '' })
+  const [newUser, setNewUser] = useState({ username: '', email: '', password: '', role: 'readonly' as UserRole })
   const [currentUser, setCurrentUser] = useState<string>('')
 
   useEffect(() => {
@@ -29,8 +46,12 @@ export default function SecurityPage() {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const res = await fetch('/api/users', {
+      const token = getAuthToken()
+      if (!token) {
+        console.error('No auth token found')
+        return
+      }
+      const res = await fetch(`${API_BASE}/api/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
@@ -44,8 +65,9 @@ export default function SecurityPage() {
 
   const fetchCurrentUser = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const res = await fetch('/api/auth/me', {
+      const token = getAuthToken()
+      if (!token) return
+      const res = await fetch(`${API_BASE}/api/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
@@ -60,8 +82,9 @@ export default function SecurityPage() {
   const handleAddUser = async () => {
     if (!newUser.username || !newUser.password) return
     try {
-      const token = localStorage.getItem('token')
-      const res = await fetch('/api/auth/register', {
+      const token = getAuthToken()
+      if (!token) return
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -70,9 +93,12 @@ export default function SecurityPage() {
         body: JSON.stringify(newUser)
       })
       if (res.ok) {
-        setNewUser({ username: '', email: '', password: '' })
+        setNewUser({ username: '', email: '', password: '', role: 'readonly' })
         setShowAddUser(false)
         fetchUsers()
+      } else {
+        const error = await res.json()
+        alert(error.detail || 'Failed to create user')
       }
     } catch (error) {
       console.error('Failed to add user:', error)
@@ -82,8 +108,9 @@ export default function SecurityPage() {
   const handleDeleteUser = async (username: string) => {
     if (!confirm(`Delete user "${username}"? This cannot be undone.`)) return
     try {
-      const token = localStorage.getItem('token')
-      const res = await fetch(`/api/users/${username}`, {
+      const token = getAuthToken()
+      if (!token) return
+      const res = await fetch(`${API_BASE}/api/users/${username}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -92,6 +119,26 @@ export default function SecurityPage() {
       }
     } catch (error) {
       console.error('Failed to delete user:', error)
+    }
+  }
+
+  const handleChangeRole = async (username: string, newRole: UserRole) => {
+    try {
+      const token = getAuthToken()
+      if (!token) return
+      const res = await fetch(`${API_BASE}/api/users/${username}/role`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ role: newRole })
+      })
+      if (res.ok) {
+        fetchUsers()
+      }
+    } catch (error) {
+      console.error('Failed to change role:', error)
     }
   }
 
@@ -135,7 +182,7 @@ export default function SecurityPage() {
                 <div>
                   <div className="text-sm text-[#6B7280] mb-1">Admin Users</div>
                   <div className="text-3xl font-bold text-[#3B82F6]">
-                    {users.filter(u => u.username === 'admin').length}
+                    {users.filter(u => u.role === 'admin').length}
                   </div>
                 </div>
                 <Shield className="h-8 w-8 text-[#3B82F6]" />
@@ -178,32 +225,47 @@ export default function SecurityPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-4">
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Username *</label>
-                  <Input
+                  <label className="text-sm font-medium mb-1 block text-[#1F2937] dark:text-[#F9FAFB]">Username *</label>
+                  <input
+                    type="text"
                     placeholder="username"
                     value={newUser.username}
                     onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                    className="w-full px-4 py-2 h-11 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] dark:text-white focus:border-[#4A8B57] outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Email</label>
-                  <Input
+                  <label className="text-sm font-medium mb-1 block text-[#1F2937] dark:text-[#F9FAFB]">Email</label>
+                  <input
                     type="email"
                     placeholder="user@example.com"
                     value={newUser.email}
                     onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                    className="w-full px-4 py-2 h-11 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] dark:text-white focus:border-[#4A8B57] outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Password *</label>
-                  <Input
+                  <label className="text-sm font-medium mb-1 block text-[#1F2937] dark:text-[#F9FAFB]">Password *</label>
+                  <input
                     type="password"
                     placeholder="••••••••"
                     value={newUser.password}
                     onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                    className="w-full px-4 py-2 h-11 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] dark:text-white focus:border-[#4A8B57] outline-none"
                   />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block text-[#1F2937] dark:text-[#F9FAFB]">Role *</label>
+                  <select
+                    className="w-full px-4 py-2 h-11 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] dark:text-white focus:border-[#4A8B57] outline-none"
+                    value={newUser.role}
+                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value as UserRole })}
+                  >
+                    <option value="readonly">Readonly</option>
+                    <option value="admin">Admin</option>
+                  </select>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -241,10 +303,12 @@ export default function SecurityPage() {
                         <div>
                           <div className="flex items-center gap-2">
                             <div className="font-semibold">{user.username}</div>
-                            {user.username === 'admin' && (
+                            {user.role === 'admin' ? (
                               <Badge variant="default">Admin</Badge>
+                            ) : (
+                              <Badge variant="outline">Readonly</Badge>
                             )}
-                            {user.username === currentUser?.username && (
+                            {user.username === currentUser && (
                               <Badge variant="success">Current</Badge>
                             )}
                           </div>
@@ -257,6 +321,16 @@ export default function SecurityPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        {user.username !== 'admin' && (
+                          <select
+                            className="px-3 py-1.5 text-sm rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] focus:border-[#4A8B57] outline-none"
+                            value={user.role}
+                            onChange={(e) => handleChangeRole(user.username, e.target.value as UserRole)}
+                          >
+                            <option value="readonly">Readonly</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        )}
                         <Button
                           size="sm"
                           variant="outline"
@@ -294,10 +368,13 @@ export default function SecurityPage() {
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Default Key Length</label>
-                <select className="w-full px-4 py-2 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] focus:border-[#4A8B57] outline-none">
+                <select
+                  className="w-full px-4 py-2 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] focus:border-[#4A8B57] outline-none"
+                  defaultValue="32"
+                >
                   <option value="16">AES-128 (16 bytes)</option>
                   <option value="24">AES-192 (24 bytes)</option>
-                  <option value="32" selected>AES-256 (32 bytes)</option>
+                  <option value="32">AES-256 (32 bytes)</option>
                 </select>
               </div>
               <div>
@@ -323,13 +400,20 @@ export default function SecurityPage() {
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Token Expiration (minutes)</label>
-                <Input type="number" defaultValue="1440" />
+                <input
+                  type="number"
+                  defaultValue="1440"
+                  className="w-full px-4 py-2 h-11 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] dark:text-white focus:border-[#4A8B57] outline-none"
+                />
               </div>
               <div>
                 <label className="text-sm font-medium mb-2 block">Auto Logout After</label>
-                <select className="w-full px-4 py-2 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] focus:border-[#4A8B57] outline-none">
+                <select
+                  className="w-full px-4 py-2 rounded-lg border-2 border-[#E5E7EB] bg-white dark:bg-[#2A2522] focus:border-[#4A8B57] outline-none"
+                  defaultValue="60"
+                >
                   <option value="30">30 minutes</option>
-                  <option value="60" selected>1 hour</option>
+                  <option value="60">1 hour</option>
                   <option value="120">2 hours</option>
                   <option value="0">Never</option>
                 </select>

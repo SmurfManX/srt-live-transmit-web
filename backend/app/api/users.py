@@ -3,9 +3,16 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from ..models.user import User
+from pydantic import BaseModel
+
+from ..models.user import User, UserRole
 from ..core.deps import get_current_active_user
-from ..database import list_users, delete_user as db_delete_user, update_user_password
+from ..database import list_users, delete_user as db_delete_user, update_user_password, update_user_role
+
+
+class RoleUpdate(BaseModel):
+    """Request body for role update"""
+    role: UserRole
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
@@ -22,7 +29,7 @@ async def delete_user_endpoint(
     current_user: User = Depends(get_current_active_user)
 ):
     """Delete a user (admin only)"""
-    if current_user.username != "admin":
+    if current_user.role != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only admin can delete users"
@@ -51,7 +58,7 @@ async def change_password(
     current_user: User = Depends(get_current_active_user)
 ):
     """Change user password"""
-    if current_user.username != "admin" and current_user.username != username:
+    if current_user.role != UserRole.admin and current_user.username != username:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Can only change own password"
@@ -65,3 +72,32 @@ async def change_password(
         )
 
     return {"message": "Password updated successfully"}
+
+
+@router.put("/{username}/role")
+async def change_role(
+    username: str,
+    role_data: RoleUpdate,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Change user role (admin only)"""
+    if current_user.role != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin can change user roles"
+        )
+
+    if username == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot change admin user's role"
+        )
+
+    success = update_user_role(username, role_data.role.value)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    return {"message": "Role updated successfully"}

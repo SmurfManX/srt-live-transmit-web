@@ -14,11 +14,14 @@ import {
   Settings, Trash2, Edit, FileText,
   Moon, Sun, BarChart3, Info, ChevronDown, ChevronRight,
   Monitor, Volume2, Loader2, Zap, Radio,
-  Cpu, HardDrive, ArrowDown, ArrowUp
+  Cpu, HardDrive, ArrowDown, ArrowUp, Shield, Download, Upload
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function Dashboard() {
+  const router = useRouter()
   const { setAuth, currentUser } = useStore()
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false)
   const [channels, setChannels] = useState<Channel[]>([])
   const [interfaces, setInterfaces] = useState<NetworkInterface[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -342,6 +345,55 @@ export default function Dashboard() {
             <span className="text-sm text-[#111] dark:text-[#ccc]">
               {currentUser?.username || 'User'}
             </span>
+
+            {/* Settings Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+                className="p-2 hover:bg-[#f0f0f0] dark:hover:bg-[#333] rounded-lg transition-colors text-[#111] dark:text-[#ccc]"
+                title="Settings"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+
+              {showSettingsMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowSettingsMenu(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#1a1a1a] rounded-lg shadow-lg border border-[#e5e5e5] dark:border-[#333] z-50 overflow-hidden">
+                    <div className="py-1">
+                      <button
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f0f0f0] dark:hover:bg-[#333] transition-colors text-left text-sm text-[#111] dark:text-white"
+                        onClick={() => {
+                          setShowSettingsMenu(false)
+                          router.push('/security')
+                        }}
+                      >
+                        <Shield className="w-4 h-4" />
+                        Security & Users
+                      </button>
+                      <button
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f0f0f0] dark:hover:bg-[#333] transition-colors text-left text-sm text-[#111] dark:text-white opacity-50 cursor-not-allowed"
+                        disabled
+                      >
+                        <Download className="w-4 h-4" />
+                        Export Channels
+                      </button>
+                      <button
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f0f0f0] dark:hover:bg-[#333] transition-colors text-left text-sm text-[#111] dark:text-white opacity-50 cursor-not-allowed"
+                        disabled
+                      >
+                        <Upload className="w-4 h-4" />
+                        Import Channels
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             <button
               onClick={toggleDarkMode}
               className="p-2 hover:bg-[#f0f0f0] dark:hover:bg-[#333] rounded-lg transition-colors text-[#111] dark:text-[#ccc]"
