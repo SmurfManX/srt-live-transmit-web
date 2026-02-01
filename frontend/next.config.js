@@ -5,7 +5,7 @@ const nextConfig = {
   // Enable standalone output for Docker deployment
   output: 'standalone',
   // Allow dev origins for cross-origin requests
-  allowedDevOrigins: ['http://207.180.240.247:3000', 'http://localhost:3000'],
+  allowedDevOrigins: ['http://127.0.0.1:3000', 'http://localhost:3000'],
   async rewrites() {
     return [
       {
