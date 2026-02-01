@@ -64,6 +64,9 @@
 ### Logs
 ![Logs](screenshots/logs.png)
 
+### User Management
+![Users](screenshots/users.png)
+
 ---
 
 ## Quick Start
